@@ -7,23 +7,20 @@ def create_app():
     from flask import Flask
     app = Flask(__name__)
     app.config.from_object('config.Config')
+    api = Api(app)
+
+    @app.route("/")
+    def home():
+        return "Hello World"
+
+    api.add_resource(User, "/user/<int:id>")
+    api.add_resource(UserCreate, "/user")
+    api.add_resource(UserList, "/users")
     return app
 
 
-app = create_app()
-api = Api(app)
-
-
-@app.route("/")
-def home():
-    return "Hello World"
-
-
-api.add_resource(User, "/user/<int:id>")
-api.add_resource(UserCreate, "/user")
-api.add_resource(UserList, "/users")
-
 if __name__ == "__main__":
+    app = create_app()
     from db import db
     db.init_app(app)
 
