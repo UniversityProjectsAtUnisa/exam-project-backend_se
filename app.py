@@ -1,5 +1,4 @@
 from flask_restful import Api
-from flask_jwt_extended import JWTManager
 
 from resources.user import User, UserList, UserCreate
 
@@ -19,8 +18,6 @@ api = Api(app)
 def home():
     return "Hello World"
 
-
-jwt = JWTManager(app)
 
 api.add_resource(User, "/user/<int:id>")
 api.add_resource(UserCreate, "/user")
