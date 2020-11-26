@@ -4,14 +4,15 @@ from db import db
 class UserModel(db.Model):
     __tablename__ = "users"
 
-    username = db.Column(db.String(80), primary_key=True)
-    password = db.Column(db.String(80))
+    username = db.Column(db.String(128), primary_key=True)
+    password = db.Column(db.String(128))
     role = db.Column(db.Enum("admin", "maintainer", "planner",
                              name="role_enum", create_type=False))
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, role):
         self.username = username
         self.password = password
+        self.role = role
 
     def json(self):
         return {

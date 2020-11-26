@@ -21,14 +21,42 @@ class User(Resource):
         return {"message": "User deleted"}, 200
 
 
-_user_parser = reqparse.RequestParser()
-_user_parser.add_argument("username",
-                          type=str, required=True,
-                          help="Username should be non-empty string"
-                          )
-
-
 class UserList(Resource):
     @classmethod
     def get(cls):
         return [user.json() for user in UserModel.find_all()]
+
+
+class UserCreate(Resource):
+    _user_parser = reqparse.RequestParser()
+    _user_parser.add_argument("username",
+                              type=str, required=True,
+                              help="Username should be non-empty string"
+                              )
+    _user_parser.add_argument("password",
+                              type=str, required=True,
+                              help="Password should be non-empty string"
+                              )
+    _user_parser.add_argument("role",
+                              type=str, required=True,
+                              help="Role should be admin, maintainer or planner"
+                              )
+
+    @classmethod
+    def post(cls):
+        data = cls._user_parser.parse_args()
+
+        if UserModel.find_by_username(data["username"]):
+            return {"message": "User with username '{}' already exists".format(data["username"])}, 400
+
+        user = UserModel(
+            data["username"],
+            generate_password_hash(data["password"], "sha256"),
+            data["role"]
+        )
+        try:
+            user.save_to_db()
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        return user.json(), 201
