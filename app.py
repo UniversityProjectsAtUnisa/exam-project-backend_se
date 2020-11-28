@@ -3,10 +3,10 @@ from flask_restful import Api
 from resources.user import User, UserList, UserCreate
 
 
-def create_app():
+def create_app(config_class="config.Config"):
     from flask import Flask
     app = Flask(__name__)
-    app.config.from_object('config.Config')
+    app.config.from_object(config_class)
     api = Api(app)
 
     @app.route("/")
@@ -20,7 +20,7 @@ def create_app():
 
 
 if __name__ == "__main__":
-    app = create_app()
+    app = create_app('config.Config')
     from db import db
     db.init_app(app)
 

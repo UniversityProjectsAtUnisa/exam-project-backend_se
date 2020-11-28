@@ -14,6 +14,7 @@ SECRET_KEY = get_env_variable('SECRET_KEY')
 # TODO: Change default database url
 # DB_URL is postgres one if launched from Heroku or sqlite one for local testing
 DB_URL = getenv("DATABASE_URL", 'sqlite:///data.db')
+TEST_DB_URL = getenv("TEST_DATABASE_URL", 'sqlite:///data.db')
 
 # Debug and testing only if explicitly stated in environment
 DEBUG = getenv("DEBUG") == "TRUE"
@@ -33,3 +34,16 @@ class Config:
     DEBUG = DEBUG
     TESTING = TESTING
     ENV = ENVIRONMENT
+
+
+class TestConfig:
+    """Flask config class."""
+    SQLALCHEMY_DATABASE_URI = TEST_DB_URL
+
+    # silence the deprecation warning
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    PROPAGATE_EXCEPTIONS = True
+
+    DEBUG = True
+    TESTING = True
+    ENV = 'testing'
