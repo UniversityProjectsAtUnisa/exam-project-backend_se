@@ -47,5 +47,7 @@ class UserModel(db.Model):
 
     # TODO: Handle pagination object
     @classmethod
-    def find_some(cls, current_page=1, page_size=10):
-        return cls.query.paginate(page=current_page, per_page=page_size, max_per_page=25)
+    def find_some(cls, current_page=1, page_size=3):
+        # return cls.query.paginate(page=current_page, per_page=page_size, max_per_page=25)
+
+        return cls.query.offset(page_size*(current_page-1)).limit(page_size).all()
