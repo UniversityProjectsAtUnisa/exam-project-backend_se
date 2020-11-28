@@ -60,15 +60,15 @@ class UserCreate(Resource):
     def post(cls):
         data = cls._user_parser.parse_args()
 
-        if UserModel.find_by_username(data["username"]):
-            return {"message": "User with username '{}' already exists".format(data["username"])}, 400
-
-        user = UserModel(
-            data["username"],
-            generate_password_hash(data["password"], "sha256"),
-            data["role"]
-        )
         try:
+            if UserModel.find_by_username(data["username"]):
+                return {"message": "User with username '{}' already exists".format(data["username"])}, 400
+
+            user = UserModel(
+                data["username"],
+                generate_password_hash(data["password"], "sha256"),
+                data["role"]
+            )
             user.save_to_db()
         except Exception as e:
             return {"error": str(e)}, 500
