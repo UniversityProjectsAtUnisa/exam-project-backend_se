@@ -13,7 +13,7 @@ def create_app():
     def home():
         return "Hello World"
 
-    api.add_resource(User, "/user/<int:id>")
+    api.add_resource(User, "/user/<string:username>")
     api.add_resource(UserCreate, "/user")
     api.add_resource(UserList, "/users")
     return app
