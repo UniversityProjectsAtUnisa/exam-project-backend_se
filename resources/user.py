@@ -59,9 +59,11 @@ class UserList(Resource):
     _user_parser = reqparse.RequestParser()
     _user_parser.add_argument("current_page",
                               type=int,
+                              default=1
                               )
     _user_parser.add_argument("page_size",
                               type=int,
+                              default=10
                               )
 
     @classmethod
