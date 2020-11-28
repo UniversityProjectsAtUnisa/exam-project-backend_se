@@ -38,7 +38,7 @@ class User(Resource):
 class UserList(Resource):
     @classmethod
     def get(cls):
-        return [user.json() for user in UserModel.find_all()]
+        return [user.json() for user in UserModel.find_all()], 200
 
 
 class UserCreate(Resource):
