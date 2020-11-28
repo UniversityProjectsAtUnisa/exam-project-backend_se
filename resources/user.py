@@ -4,6 +4,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 class User(Resource):
+    _user_parser = reqparse.RequestParser()
+    _user_parser.add_argument("username",
+                              type=str,
+                              required=False,
+                              help="Username should be non-empty string"
+                              )
+    _user_parser.add_argument("role",
+                              type=str,
+                              required=False,
+                              help="Role should be admin, maintainer or planner"
+                              )
+
     @classmethod
     def get(cls, username):
         try:
@@ -16,10 +28,18 @@ class User(Resource):
         return user.json(), 200
 
     @classmethod
-    def delete(cls, id):
-        user = UserModel.find_by_id(id)
-        if not user:
-            return {"message": "User not found"}, 404
+    def put(cls, username):
+        data = cls._user_parser.parse_args()
+        try:
+            user = UserModel.find_by_username(username)
+
+            if not user:
+                return {"message": "User not found"}, 404
+
+            user.update_and_save(data)
+        except Exception as e:
+            return {"error": str(e)}, 500
+        return user.json(), 200
 
     @classmethod
     def delete(cls, username):
