@@ -1,4 +1,5 @@
 from db import db
+from common.utils import get_metadata
 
 
 class UserModel(db.Model):
@@ -45,9 +46,12 @@ class UserModel(db.Model):
     def find_all(cls):
         return cls.query.all()
 
-    # TODO: Handle pagination object
     @classmethod
     def find_some(cls, current_page=1, page_size=3):
-        # return cls.query.paginate(page=current_page, per_page=page_size, max_per_page=25)
+        rows = cls.query.offset(
+            page_size*(current_page-1)).limit(page_size).all()
 
-        return cls.query.offset(page_size*(current_page-1)).limit(page_size).all()
+        meta = get_metadata(
+            cls.query.paginate(page=current_page, per_page=page_size)
+        )
+        return rows, meta

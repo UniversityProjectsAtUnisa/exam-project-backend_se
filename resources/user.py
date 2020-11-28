@@ -67,34 +67,34 @@ class UserList(Resource):
     @classmethod
     def get(cls):
         data = cls._user_parser.parse_args()
-        return [user.json() for user in UserModel.find_some(**data))], 200
-        # return [user.json() for user in UserModel.find_some()], 200
+        rows, meta = UserModel.find_some(**data)
+        return {"rows": [user.json() for user in rows], "meta": meta}, 200
 
 
 class UserCreate(Resource):
-    _user_parser=reqparse.RequestParser()
+    _user_parser = reqparse.RequestParser()
     _user_parser.add_argument("username",
-                              type = str, required = True,
-                              help = "Username should be non-empty string"
+                              type=str, required=True,
+                              help="Username should be non-empty string"
                               )
     _user_parser.add_argument("password",
-                              type = str, required = True,
-                              help = "Password should be non-empty string"
+                              type=str, required=True,
+                              help="Password should be non-empty string"
                               )
     _user_parser.add_argument("role",
-                              type = str, required = True,
-                              help = "Role should be admin, maintainer or planner"
+                              type=str, required=True,
+                              help="Role should be admin, maintainer or planner"
                               )
 
     @ classmethod
     def post(cls):
-        data=cls._user_parser.parse_args()
+        data = cls._user_parser.parse_args()
 
         try:
             if UserModel.find_by_username(data["username"]):
                 return {"message": "User with username '{}' already exists".format(data["username"])}, 400
 
-            user=UserModel(
+            user = UserModel(
                 data["username"],
                 generate_password_hash(data["password"], "sha256"),
                 data["role"]
