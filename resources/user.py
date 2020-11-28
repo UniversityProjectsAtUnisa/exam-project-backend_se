@@ -5,11 +5,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(Resource):
     @classmethod
-    def get(cls, id):
-        user = UserModel.find_by_id(id)
+    def get(cls, username):
+        try:
+            user = UserModel.find_by_username(username)
+        except Exception as e:
+            return {"error": str(e)}, 500
+
         if not user:
             return {"message": "User not found"}, 404
-        return user.json(), 201
+        return user.json(), 200
 
     @classmethod
     def delete(cls, id):
