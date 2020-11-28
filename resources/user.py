@@ -21,7 +21,17 @@ class User(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
-        user.delete_from_db()
+    @classmethod
+    def delete(cls, username):
+        try:
+            user = UserModel.find_by_username(username)
+            if not user:
+                return {"message": "User not found"}, 404
+            user.delete_from_db()
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
         return {"message": "User deleted"}, 200
 
 
