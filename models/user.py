@@ -24,6 +24,15 @@ class UserModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def update(self, data):
+        for k in data:
+            if(data[k]):
+                setattr(self, k, data[k])
+
+    def update_and_save(self, data):
+        self.update(data)
+        self.save_to_db()
+
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
