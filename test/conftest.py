@@ -17,7 +17,22 @@ def client(app):
 
 
 @pytest.fixture
-def seed(app):
+def user_seeds():
+    return [
+        {'username': 'admin1', 'password': 'password', 'role': 'admin'},
+        {'username': 'admin2', 'password': 'password', 'role': 'admin'},
+        {'username': 'maintainer1', 'password': 'password', 'role': 'maintainer'},
+        {'username': 'maintainer2', 'password': 'password', 'role': 'maintainer'},
+        {'username': 'planner1', 'password': 'password', 'role': 'planner'},
+        {'username': 'planner2', 'password': 'password', 'role': 'planner'},
+    ]
+
+
+@pytest.fixture
+def unexisting_user():
+    return {'username': 'username', 'password': 'password', 'role': 'admin'}
+
+
     with app.app_context():
         from db import db
         db.drop_all()
