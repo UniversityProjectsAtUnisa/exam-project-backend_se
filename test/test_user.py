@@ -44,8 +44,47 @@ def test_get_users_page_not_found(client, user_seeds, reset_db):
     assert "message" in res.get_json().keys()
 
 
+def test_post_user_success(client, unexisting_user, reset_db):
+    test_user = unexisting_user
+    res = client.post('/user', data=test_user)
+
     assert res.status_code == 201
-    assert isinstance(res.get_json(), dict)
+    assert res.get_json()['username'] == test_user['username']
+    assert res.get_json()['role'] == test_user['role']
+    assert 'password' not in res.get_json().keys()
+
+
+def test_post_user_already_exists(client, user_seeds, reset_db):
+    test_user = user_seeds[0]
+    res = client.post('/user', data=test_user)
+
+    assert res.status_code == 400
+    assert 'message' in res.get_json().keys()
+
+
+def test_post_user_missing_username(client, reset_db):
+    test_user_without_username = {'password': 'password', 'role': 'admin'}
+    res = client.post('/user', data=test_user_without_username)
+    assert res.status_code == 400
+    assert 'message' in res.get_json().keys()
+    assert 'username' in res.get_json()['message'].keys()
+
+
+def test_post_user_missing_password(client, reset_db):
+    test_user_without_password = {'username': 'username', 'role': 'admin'}
+    res = client.post('/user', data=test_user_without_password)
+    assert res.status_code == 400
+    assert 'message' in res.get_json().keys()
+    assert 'password' in res.get_json()['message'].keys()
+
+
+def test_post_user_missing_role(client, reset_db):
+    test_user_without_role = {'username': 'username', 'password': 'password'}
+    res = client.post('/user', data=test_user_without_role)
+    assert res.status_code == 400
+    assert 'message' in res.get_json().keys()
+    assert 'role' in res.get_json()['message'].keys()
+
     assert res.get_json()['username'] == test_user['username']
     assert res.get_json()['role'] == test_user['role']
     assert 'password' not in res.get_json().keys()
