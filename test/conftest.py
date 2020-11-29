@@ -18,6 +18,7 @@ def client(app):
 
 @pytest.fixture
 def user_seeds():
+    # TODO: docstring
     return [
         {'username': 'admin1', 'password': 'password', 'role': 'admin'},
         {'username': 'admin2', 'password': 'password', 'role': 'admin'},
@@ -30,11 +31,13 @@ def user_seeds():
 
 @pytest.fixture
 def unexisting_user():
+    # TODO: docstring
     return {'username': 'username', 'password': 'password', 'role': 'admin'}
 
 
 @pytest.fixture
 def reset_db(app, user_seeds):
+    # TODO: docstring
     with app.app_context():
         from db import db
         db.drop_all()

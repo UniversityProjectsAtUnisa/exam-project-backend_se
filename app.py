@@ -1,5 +1,4 @@
 from flask_restful import Api
-
 from resources.user import User, UserList, UserCreate
 
 

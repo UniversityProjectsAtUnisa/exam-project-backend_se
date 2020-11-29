@@ -1,3 +1,6 @@
+# TODO: docstring every test
+# TODO: add messagges on weird asserts
+
 def test_get_user_success(client, user_seeds, reset_db):
     test_user = user_seeds[0]
     res = client.get(f"/user/{test_user['username']}")

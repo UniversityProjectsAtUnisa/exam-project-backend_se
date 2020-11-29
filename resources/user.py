@@ -1,6 +1,6 @@
 from models.user import UserModel
 from flask_restful import Resource, reqparse
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 
 
 class User(Resource):
@@ -68,6 +68,7 @@ class UserList(Resource):
 
     @classmethod
     def get(cls):
+        # TODO: docstring
         data = cls._user_parser.parse_args()
         rows, meta = UserModel.find_some(**data)
         return {"rows": [user.json() for user in rows], "meta": meta}, 200

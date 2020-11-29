@@ -48,6 +48,7 @@ class UserModel(db.Model):
 
     @classmethod
     def find_some(cls, current_page=1, page_size=10):
+        # TODO: docstring
         rows = cls.query.offset(
             page_size*(current_page-1)).limit(page_size).all()
 
