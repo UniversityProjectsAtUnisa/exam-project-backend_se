@@ -1,5 +1,3 @@
-# TODO: add messagges on weird asserts
-
 def test_get_user_success(client, user_seeds):
     """ Test for searching an existing user by his username """
     test_user = user_seeds[0]
