@@ -33,12 +33,14 @@ def unexisting_user():
     return {'username': 'username', 'password': 'password', 'role': 'admin'}
 
 
+@pytest.fixture
+def reset_db(app, user_seeds):
     with app.app_context():
         from db import db
         db.drop_all()
         db.create_all()
         from models.user import UserModel
-        for i in range(3):
-            user = UserModel(str(i), "password", 'admin')
+        for seed in user_seeds:
+            user = UserModel(**seed)
             user.save_to_db()
     return True
