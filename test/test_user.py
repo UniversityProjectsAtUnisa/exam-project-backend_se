@@ -84,14 +84,3 @@ def test_post_user_missing_role(client, reset_db):
     assert res.status_code == 400
     assert 'message' in res.get_json().keys()
     assert 'role' in res.get_json()['message'].keys()
-
-    assert res.get_json()['username'] == test_user['username']
-    assert res.get_json()['role'] == test_user['role']
-    assert 'password' not in res.get_json().keys()
-
-
-def test_get_users_after_post(client, seed):
-    res = client.get('/users')
-    assert res.status_code == 200
-    data = res.get_json()
-    assert len(data['rows']) == 3
