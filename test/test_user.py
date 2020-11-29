@@ -126,3 +126,16 @@ def test_put_user_not_found(client, unexisting_user, reset_db):
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
 
+
+def test_delete_user_success(client, user_seeds, reset_db):
+    test_user = user_seeds[0]
+    res = client.delete(f"/user/{test_user['username']}")
+    assert res.status_code == 200
+    assert 'message' in res.get_json().keys()
+
+
+def test_delete_user_not_found(client, unexisting_user, reset_db):
+    test_user = unexisting_user
+    res = client.delete(f"/user/{test_user['username']}")
+    assert res.status_code == 404
+    assert 'message' in res.get_json().keys()
