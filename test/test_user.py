@@ -1,7 +1,7 @@
-# TODO: docstring every test
 # TODO: add messagges on weird asserts
 
 def test_get_user_success(client, user_seeds, reset_db):
+    """ Test for searching an existing user by his username """
     test_user = user_seeds[0]
     res = client.get(f"/user/{test_user['username']}")
     assert res.status_code == 200
@@ -11,13 +11,14 @@ def test_get_user_success(client, user_seeds, reset_db):
 
 
 def test_get_user_not_found(client, unexisting_user, reset_db):
-    test_user = unexisting_user
+    """ Test for searching a non-existing user """
     res = client.get(f"/user/{test_user['username']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
 
 
 def test_get_users_success(client, user_seeds, reset_db):
+    """ Test for getting correctly the first page of users """
     test_current_page = 1
     test_page_size = len(user_seeds) - 1
 
@@ -36,6 +37,7 @@ def test_get_users_success(client, user_seeds, reset_db):
 
 
 def test_get_users_page_not_found(client, user_seeds, reset_db):
+    """ Test for a non-existing page """
     test_page_size = 5
     import math
     test_page_count = math.ceil(len(user_seeds) / test_page_size)
@@ -48,6 +50,7 @@ def test_get_users_page_not_found(client, user_seeds, reset_db):
 
 
 def test_post_user_success(client, unexisting_user, reset_db):
+    """ Test for creating a new user with a non-existing username """
     test_user = unexisting_user
     res = client.post('/user', data=test_user)
 
@@ -58,6 +61,7 @@ def test_post_user_success(client, unexisting_user, reset_db):
 
 
 def test_post_user_already_exists(client, user_seeds, reset_db):
+    """ Test for creating a new user with an existing username """
     test_user = user_seeds[0]
     res = client.post('/user', data=test_user)
 
@@ -66,6 +70,7 @@ def test_post_user_already_exists(client, user_seeds, reset_db):
 
 
 def test_post_user_missing_username(client, reset_db):
+    """ Test for creating a new user without username """
     test_user_without_username = {'password': 'password', 'role': 'admin'}
     res = client.post('/user', data=test_user_without_username)
     assert res.status_code == 400
@@ -74,6 +79,7 @@ def test_post_user_missing_username(client, reset_db):
 
 
 def test_post_user_missing_password(client, reset_db):
+    """ Test for creating a new user without password """
     test_user_without_password = {'username': 'username', 'role': 'admin'}
     res = client.post('/user', data=test_user_without_password)
     assert res.status_code == 400
@@ -82,6 +88,7 @@ def test_post_user_missing_password(client, reset_db):
 
 
 def test_post_user_missing_role(client, reset_db):
+    """ Test for creating a new user without role """
     test_user_without_role = {'username': 'username', 'password': 'password'}
     res = client.post('/user', data=test_user_without_role)
     assert res.status_code == 400
@@ -90,6 +97,7 @@ def test_post_user_missing_role(client, reset_db):
 
 
 def test_put_user_success(client, unexisting_user, user_seeds, reset_db):
+    """ Test for modifying an user's username and role """
     test_user = unexisting_user
     test_user.pop('password')
     test_old_user = user_seeds[0]
@@ -102,6 +110,7 @@ def test_put_user_success(client, unexisting_user, user_seeds, reset_db):
 
 
 def test_put_user_username_success(client, unexisting_user, user_seeds, reset_db):
+    """ Test for modifying an user's username """
     test_user = {'username': unexisting_user['username']}
     test_old_user = user_seeds[0]
 
@@ -113,6 +122,7 @@ def test_put_user_username_success(client, unexisting_user, user_seeds, reset_db
 
 
 def test_put_user_role_success(client, unexisting_user, user_seeds, reset_db):
+    """ Test for modifying an user's role """
     test_user = {'role': unexisting_user['role']}
     test_old_user = user_seeds[0]
 
@@ -124,6 +134,7 @@ def test_put_user_role_success(client, unexisting_user, user_seeds, reset_db):
 
 
 def test_put_user_not_found(client, unexisting_user, reset_db):
+    """ Test for modifying a non-existing user """
     test_user = unexisting_user
     res = client.put(f"/user/{test_user['username']}", data={})
     assert res.status_code == 404
@@ -131,6 +142,7 @@ def test_put_user_not_found(client, unexisting_user, reset_db):
 
 
 def test_delete_user_success(client, user_seeds, reset_db):
+    """ Test for deleting an existing user """
     test_user = user_seeds[0]
     res = client.delete(f"/user/{test_user['username']}")
     assert res.status_code == 200
@@ -138,6 +150,7 @@ def test_delete_user_success(client, user_seeds, reset_db):
 
 
 def test_delete_user_not_found(client, unexisting_user, reset_db):
+    """ Test for deleting a non-existing user """
     test_user = unexisting_user
     res = client.delete(f"/user/{test_user['username']}")
     assert res.status_code == 404
