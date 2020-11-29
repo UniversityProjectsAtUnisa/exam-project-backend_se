@@ -18,7 +18,11 @@ def client(app):
 
 @pytest.fixture
 def user_seeds():
-    # TODO: docstring
+    """Gets the list of users that will be used to prepopulate the database before each test
+
+    Returns:
+        list of (dict of (str, str)): list of users
+    """
     return [
         {'username': 'admin1', 'password': 'password', 'role': 'admin'},
         {'username': 'admin2', 'password': 'password', 'role': 'admin'},
@@ -31,13 +35,22 @@ def user_seeds():
 
 @pytest.fixture
 def unexisting_user():
-    # TODO: docstring
+    """Gets an user that is not included in user_seeds
+
+    Returns:
+        dict of (str, str): the unexisting_user
+    """
     return {'username': 'username', 'password': 'password', 'role': 'admin'}
 
 
-@pytest.fixture
-def reset_db(app, user_seeds):
-    # TODO: docstring
+@pytest.fixture(autouse=True)
+def setup(app, user_seeds):
+    """Before each test it drops every table and recreates them. 
+    Then it creates an user for every dictionary present in user_seeds
+
+    Returns:
+        boolean: the return status
+    """
     with app.app_context():
         from db import db
         db.drop_all()

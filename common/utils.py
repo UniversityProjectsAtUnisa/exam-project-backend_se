@@ -1,5 +1,15 @@
-def get_metadata(pagination):
-    # TODO: docstring
+from flask_sqlalchemy import Pagination
+
+
+def get_metadata(pagination: Pagination) -> dict[str, int]:
+    """Gets formatted metadata from pagination object in order to allow the frontend to handle pages properly
+
+    Args:
+        pagination (Pagination): Pagination object generated from query builders in models methods
+
+    Returns:
+        dict of (str, int): Metadata
+    """
     return {
         "count": pagination.total,
         "current_page": pagination.page,
