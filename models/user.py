@@ -48,7 +48,16 @@ class UserModel(db.Model):
 
     @classmethod
     def find_some(cls, current_page=1, page_size=10):
-        # TODO: docstring
+        """Finds and paginate results
+
+        Args:
+            current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
+            page_size (int, optional): The desired page size. Defaults to 10.
+
+        Returns:
+            ( list of (UserModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated UserModel instances; The second tuple element is the pagination metadata;
+        """
         rows = cls.query.offset(
             page_size*(current_page-1)).limit(page_size).all()
 
