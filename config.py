@@ -1,0 +1,42 @@
+from os import getenv
+from dotenv import load_dotenv
+from pathlib import Path
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# This file loads .env file in local memory and
+# handles the initialization of Config and TestConfig classes
+# used by Flask
+
+# The main database url
+DB_URL = getenv("DATABASE_URL", 'sqlite:///data.db')
+# The test database url
+TEST_DB_URL = getenv("TEST_DATABASE_URL", 'sqlite:///data.db')
+TESTING = getenv("TESTING") == "TRUE"
+ENVIRONMENT = "development" if getenv(
+    "DEVELOPMENT") == "TRUE" else "production"
+
+
+class Config:
+    """Flask Config class."""
+    SQLALCHEMY_DATABASE_URI = DB_URL
+
+    # silence the deprecation warning
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Enable testing mode. Exceptions are propagated rather than handled by the the app’s error handlers.
+    TESTING = TESTING
+    # Environment mode (development or production), defaults to production
+    ENV = ENVIRONMENT
+
+
+class TestConfig:
+    """Flask TestConfig class."""
+    SQLALCHEMY_DATABASE_URI = TEST_DB_URL
+
+    # silence the deprecation warning
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Enable testing mode. Exceptions are propagated rather than handled by the the app’s error handlers.
+    TESTING = True
+    ENV = 'development'
