@@ -1,7 +1,4 @@
-from flask_sqlalchemy import Pagination
-
-
-def get_metadata(pagination: Pagination) -> dict[str, int]:
+def get_metadata(pagination):
     """Gets formatted metadata from pagination object in order to allow the frontend to handle pages properly
 
     Args:
