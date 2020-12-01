@@ -58,7 +58,7 @@ class User(Resource):
             if not user:
                 return {"message": "User not found"}, 404
 
-            if "username" in data and UserModel.find_by_username(data["username"]):
+            if "username" in data and username != data["username"] and UserModel.find_by_username(data["username"]):
                 return {"message": "User with username '{}' already exists".format(data["username"])}, 400
 
             user.update_and_save(data)
