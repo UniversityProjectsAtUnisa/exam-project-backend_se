@@ -140,6 +140,16 @@ def test_put_user_not_found(client, unexisting_user):
     assert 'message' in res.get_json().keys()
 
 
+def test_put_user_new_username_already_existing(client, user_seeds):
+    """ Test for modifying an user with another username which is already used """
+    test_user = user_seeds[0]
+    user_with_username_already_existing = user_seeds[1]
+    res = client.put(
+        f"/user/{test_user['username']}", data=user_with_username_already_existing)
+    assert res.status_code == 400
+    assert 'message' in res.get_json().keys()
+
+
 def test_delete_user_success(client, user_seeds):
     """ Test for deleting an existing user """
     test_user = user_seeds[0]

@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash
 
 
 class User(Resource):
+    """User API for get (single), put and delete operations."""
     _user_parser = reqparse.RequestParser()
     _user_parser.add_argument("username",
                               type=str,
@@ -18,6 +19,15 @@ class User(Resource):
 
     @classmethod
     def get(cls, username):
+        """Gets one user from database based on given username. 
+            Fails if there is no user with that username.
+
+        Args:
+            username (str): The username of the user to be retrieved.
+
+        Returns:
+            dict of (str, any): Jsonified user or error message.
+        """
         try:
             user = UserModel.find_by_username(username)
         except Exception as e:
@@ -29,12 +39,27 @@ class User(Resource):
 
     @classmethod
     def put(cls, username):
+        """Edits one user in the database based on given username. 
+            Fails if there is no user with that username.
+            Fails if there is already an user with the new username.
+
+        Args:
+            username (str): The username of the user to be edited.
+            username (str, optional): Body param indicating the new username.
+            role (str, optional): Body param indicating the new role.
+
+        Returns:
+            dict of (str, any): Jsonified user or error message.
+        """
         data = cls._user_parser.parse_args()
         try:
             user = UserModel.find_by_username(username)
 
             if not user:
                 return {"message": "User not found"}, 404
+
+            if "username" in data and username != data["username"] and UserModel.find_by_username(data["username"]):
+                return {"message": "User with username '{}' already exists".format(data["username"])}, 400
 
             user.update_and_save(data)
         except Exception as e:
@@ -43,6 +68,15 @@ class User(Resource):
 
     @classmethod
     def delete(cls, username):
+        """Deletes one user from database based on given username. 
+            Fails if there is no user with that username.
+
+        Args:
+            username (str): The username of the user to be deleted.
+
+        Returns:
+            dict of (str, any): Confirmation or error message.
+        """
         try:
             user = UserModel.find_by_username(username)
             if not user:
@@ -56,6 +90,7 @@ class User(Resource):
 
 
 class UserList(Resource):
+    """User API for get (multiple) operations."""
     _user_parser = reqparse.RequestParser()
     _user_parser.add_argument("current_page",
                               type=int,
@@ -68,10 +103,14 @@ class UserList(Resource):
 
     @classmethod
     def get(cls):
-        """Gets a paginated list of users, along with its metadata
+        """Gets a paginated list of users, along with its metadata. Takes current_page and page_size as optional body arguments.
+
+        Args:
+            current_page (int, optional): Body param indicating the requested page. Defaults to 1.
+            page_size (int, optional): Body param indicating the page size. Defaults to 10.
 
         Returns:
-            dict of (str, any): rows is the list of paginated users; meta is its metadata;
+            dict of (str, any): Json of rows and meta. Rows is the list of paginated users; meta is its metadata;
         """
         data = cls._user_parser.parse_args()
         rows, meta = UserModel.find_some(**data)
@@ -79,6 +118,7 @@ class UserList(Resource):
 
 
 class UserCreate(Resource):
+    """User API for post operations."""
     _user_parser = reqparse.RequestParser()
     _user_parser.add_argument("username",
                               type=str, required=True,
@@ -95,6 +135,17 @@ class UserCreate(Resource):
 
     @ classmethod
     def post(cls):
+        """Creates one user in the database. 
+            Fails if there is alrady an user with that username.
+
+        Args:
+            username (str): Body param indicating the new username.
+            password (str): Body param indicating the new username.
+            role (str): Body param indicating the new role.
+
+        Returns:
+            dict of (str, any): Jsonified user or error message.
+        """
         data = cls._user_parser.parse_args()
 
         try:
