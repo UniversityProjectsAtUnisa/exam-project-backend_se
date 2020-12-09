@@ -1,5 +1,6 @@
 from db import db
 from common.utils import get_metadata
+from werkzeug.security import generate_password_hash
 
 
 class UserModel(db.Model):
@@ -16,11 +17,11 @@ class UserModel(db.Model):
 
         Args:
             username (str): The user username
-            password (str): The user hashed password
+            password (str): The user password
             role (str): The user role (admin, maintainer or planner)
         """
         self.username = username
-        self.password = password
+        self.password = generate_password_hash(password)
         self.role = role
 
     def json(self):
