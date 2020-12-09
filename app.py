@@ -1,20 +1,21 @@
 from flask_restful import Api
-from resources.user import User, UserList, UserCreate
+from blacklist import BLACKLIST
+from jwt_utils import bind_jwt_messages
+from resources.user import User, UserList, UserCreate, UserLogin, UserLogout
 
 
 def create_app(config_class="config.Config"):
     from flask import Flask
     app = Flask(__name__)
     app.config.from_object(config_class)
+    bind_jwt_messages(app)
     api = Api(app)
-
-    @app.route("/")
-    def home():
-        return "Hello World"
 
     api.add_resource(User, "/user/<string:username>")
     api.add_resource(UserCreate, "/user")
     api.add_resource(UserList, "/users")
+    api.add_resource(UserLogin, "/login")
+    api.add_resource(UserLogout, "/logout")
     return app
 
 

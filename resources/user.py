@@ -1,6 +1,13 @@
 from models.user import UserModel
 from flask_restful import Resource, reqparse
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_raw_jwt
+)
+from jwt_utils import role_required
+from blacklist import BLACKLIST
 
 
 class User(Resource):
@@ -17,6 +24,7 @@ class User(Resource):
                               help="Role should be admin, maintainer or planner"
                               )
 
+    @role_required()
     @classmethod
     def get(cls, username):
         """Gets one user from database based on given username. 
@@ -38,6 +46,7 @@ class User(Resource):
         return user.json(), 200
 
     @classmethod
+    @role_required()
     def put(cls, username):
         """Edits one user in the database based on given username. 
             Fails if there is no user with that username.
@@ -67,6 +76,7 @@ class User(Resource):
         return user.json(), 200
 
     @classmethod
+    @role_required()
     def delete(cls, username):
         """Deletes one user from database based on given username. 
             Fails if there is no user with that username.
@@ -102,6 +112,7 @@ class UserList(Resource):
                               )
 
     @classmethod
+    @role_required()
     def get(cls):
         """Gets a paginated list of users, along with its metadata. Takes current_page and page_size as optional body arguments.
 
@@ -134,9 +145,10 @@ class UserCreate(Resource):
                               )
 
     @ classmethod
+    @role_required()
     def post(cls):
         """Creates one user in the database. 
-            Fails if there is alrady an user with that username.
+            Fails if there is already an user with that username.
 
         Args:
             username (str): Body param indicating the new username.
@@ -152,13 +164,65 @@ class UserCreate(Resource):
             if UserModel.find_by_username(data["username"]):
                 return {"message": "User with username '{}' already exists".format(data["username"])}, 400
 
-            user = UserModel(
-                data["username"],
-                generate_password_hash(data["password"], "sha256"),
-                data["role"]
-            )
+            user = UserModel(**data)
             user.save_to_db()
         except Exception as e:
             return {"error": str(e)}, 500
 
         return user.json(), 201
+
+
+class UserLogin(Resource):
+    """User API for login operation."""
+    _user_parser = reqparse.RequestParser()
+    _user_parser.add_argument("username",
+                              type=str, required=True,
+                              help="Username should be non-empty string"
+                              )
+    _user_parser.add_argument("password",
+                              type=str, required=True,
+                              help="Password should be non-empty string"
+                              )
+
+    @classmethod
+    def post(cls):
+        """Creates an access token and a refresh token for the user with given username and password.
+            Fails if there is no user with that username.
+            Fails if password don't match.
+
+        Args:
+            username (str): Body param indicating the username.
+            password (str): Body param indicating the password.
+
+        Returns:
+            dict of (str, str): Access token
+        """
+        data = cls._user_parser.parse_args()
+
+        user = UserModel.find_by_username(data['username'])
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        if not check_password_hash(user.password, data["password"]):
+            return {"message": "Incorrect password"}, 401  # Not authorized
+
+        access_token = create_access_token(
+            identity=user.username, user_claims=user.json())
+        return {"access_token": access_token}, 200
+
+
+class UserLogout(Resource):
+    """User API for logout operation"""
+    @classmethod
+    @jwt_required
+    def post(cls):
+        """Retrieves the current jwt id and saves it in memory, since a jwt token cannot be forced to expire.
+
+        Returns:
+            dict of (str, str): A confirmation message
+        """
+        # jti is "JWT ID", a unique identifier for JWT
+        jti = get_raw_jwt()['jti']
+        BLACKLIST.add(jti)
+        return {"message": "Successfully logged out"}, 200
