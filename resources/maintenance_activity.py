@@ -72,10 +72,33 @@ class MaintenanceActivity(Resource):
     @classmethod
     def delete(cls, id):
         """Deletes one activity from database based on given id. 
-            Fails if there is no activty with that id.
-            TODO
+
+class MaintenanceActivityList(Resource):
+    """Maintenance Activity API for get (multiple) operations."""
+    _activity_parser = reqparse.RequestParser()
+    _activity_parser.add_argument("current_page",
+                                  type=int,
+                                  default=1
+                                  )
+    _activity_parser.add_argument("page_size",
+                                  type=int,
+                                  default=3
+                                  )
+
+    @classmethod
+    def get(cls):
+        """Gets a paginated list of activites, along with its metadata. Takes current_page and page_size as optional body arguments.
+
+        Args:
+            current_page (int, optional): Body param indicating the requested page. Defaults to 1.
+            page_size (int, optional): Body param indicating the page size. Defaults to 10.
+
+        Returns:
+            dict of (str, any): Json of rows and meta. Rows is the list of paginated activities; meta is its metadata;
         """
-        pass
+        data = cls._activity_parser.parse_args()
+        rows, meta = MaintenanceActivityModel.find_some(**data)
+        return {"rows": [user.json() for user in rows], "meta": meta}, 200
 
 
 class MaintenanceActivityCreate(Resource):
