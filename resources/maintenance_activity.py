@@ -133,6 +133,25 @@ class MaintenanceActivityCreate(Resource):
                                   help="Workspace Notes should be a short description of the workspace"
                                   )
 
-    @classmethod
+    @ classmethod
     def post(cls):
-        pass
+        """Creates one Maintenance Activity in the database. 
+            Fails if there is already an activity with that id.
+        TODO
+        Args:
+
+        Returns:
+            dict of (str, any): Jsonified activity or error message.
+        """
+        data = cls._activity_parser.parse_args()
+
+        try:
+            if MaintenanceActivityModel.find_by_id(data["activity_id"]):
+                return {"message": "Maintenance Activity with id '{}' already exists".format(data["activity_id"])}, 400
+
+            activity = MaintenanceActivityModel(**data)
+            activity.save_to_db()
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        return activity.json(), 201
