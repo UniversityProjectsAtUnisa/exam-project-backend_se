@@ -48,14 +48,15 @@ def setup(app, user_seeds):
 
 
 @pytest.fixture
-def admin_client(client):
+def admin_client(client, user_seeds):
     """ Creates a test client with preset authorization headers taken from the login endpoint 
 
     Returns:
         FlaskClient: The test client
     """
+    admin_user = next(user for user in user_seeds if user["role"] == "admin")
     res = client.post(
-        "/login", data={"username": "admin1", "password": "password"})
+        "/login", data=admin_user)
     access_token = res.get_json()["access_token"]
     client.environ_base['HTTP_AUTHORIZATION'] = 'Bearer ' + access_token
     return client
