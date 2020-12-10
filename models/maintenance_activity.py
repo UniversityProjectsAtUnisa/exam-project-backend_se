@@ -1,8 +1,9 @@
 from db import db
 from common.utils import get_metadata
+#from sqlalchemy import CheckConstraint
 
 
-class MaintenanceActivity(db.Model):
+class MaintenanceActivityModel(db.Model):
     """Maintenance Activity class for database interaction"""
     __tablename__ = "maintenance activity"
 
@@ -16,20 +17,15 @@ class MaintenanceActivity(db.Model):
     interruptible = db.Column(db.Enum("yes", "no",
                                       name="interruptible_enum", create_type=False))
     materials = db.Column(db.String(128), nullable=False)
-    week = db.Column(db.Integer)
+    week = db.Column(db.Integer, db.CheckConstraint(
+        "week >= 1 AND week <= 52"))
     workspace_notes = db.Column(db.String(128), nullable=False)
-    __table_args__ = (
-        CheckConstraint(week >= 1, name='check_first_week'),
-        {​​}​​)
-    __table_args__ = (
-        CheckConstraint(week <= 52, name='check_last_week'),
-        {​​}​​)
 
     def __init__(self, activity_id, activity_type, site, typology, description, estimated_time,
-                 interruptible, materials=None, week, workspace_notes=None):
+                 interruptible, week, materials=None, workspace_notes=None):
         """ 
         TODO
-        MaintenanceActivity constructor.
+        MaintenanceActivityModel constructor.
 
         Args:
             activity_id (int): Unique identifier for Maintenance Activities
@@ -55,20 +51,20 @@ class MaintenanceActivity(db.Model):
         self.workspace_notes = workspace_notes
 
     def json(self):
-        """Public representation for MaintenanceActivity instance.
+        """Public representation for MaintenanceActivityModel instance.
         Returns:
             TODO
         """
         return {
             "id": self.activity_id,
-            "type": self.activity_type
-            "site": self.site
-            "typology": self.typology
-            "description": self.description
-            "estimated time": self.estimated_time
-            "interruptible": self.interruptible
-            "materials": self.materials
-            "week": self.week
+            "type": self.activity_type,
+            "site": self.site,
+            "typology": self.typology,
+            "description": self.description,
+            "estimated time": self.estimated_time,
+            "interruptible": self.interruptible,
+            "materials": self.materials,
+            "week": self.week,
             "workspace notes": self.workspace_notes
         }
 
@@ -82,30 +78,30 @@ class MaintenanceActivity(db.Model):
 
         Args:
         TODO
-            data (dict of (str, str)): Dictionary of username, hashed password and role, optionals.
+
         """
         setattr(self.workspace_notes, data)
 
     def update_and_save(self, data):
-        """Updates MaintenanceActivity instance with passed data and saves it to the database. 
+        """Updates MaintenanceActivityModel instance with passed data and saves it to the database. 
 
         Args:
         TODO
-            data (dict of (str, str)): Dictionary of username, hashed password and role, optionals.
+
         """
         self.update(data)
         self.save_to_db()
 
     def delete_from_db(self):
-        """Deletes MaintenanceActivity instance from database"""
+        """Deletes MaintenanceActivityModel instance from database"""
         db.session.delete(self)
         db.session.commit()
 
     @classmethod
-    def find_by_id(cls, id):
+    def find_by_id(cls, activity_id):
         """Finds a Maintenance Activity in the database based on given id.
         Args:
-            id (int): The identifier of the Maintenance Activity to retrieve.
+            activity_id (int): The identifier of the Maintenance Activity to retrieve.
 
         TODO
         Returns:
