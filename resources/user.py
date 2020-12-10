@@ -1,3 +1,4 @@
+from flask_jwt_extended.utils import get_jwt_identity
 from models.user import UserModel
 from flask_restful import Resource, reqparse
 from werkzeug.security import check_password_hash
@@ -24,8 +25,8 @@ class User(Resource):
                               help="Role should be admin, maintainer or planner"
                               )
 
-    @role_required()
     @classmethod
+    @role_required()
     def get(cls, username):
         """Gets one user from database based on given username. 
             Fails if there is no user with that username.
@@ -199,7 +200,10 @@ class UserLogin(Resource):
         """
         data = cls._user_parser.parse_args()
 
-        user = UserModel.find_by_username(data['username'])
+        try:
+            user = UserModel.find_by_username(data['username'])
+        except Exception as e:
+            return {"error": str(e)}, 500
 
         if not user:
             return {"message": "User not found"}, 404
@@ -226,3 +230,50 @@ class UserLogout(Resource):
         jti = get_raw_jwt()['jti']
         BLACKLIST.add(jti)
         return {"message": "Successfully logged out"}, 200
+
+
+class UserChangePassword(Resource):
+    """User API for change password operation"""
+    _user_parser = reqparse.RequestParser()
+    _user_parser.add_argument("old_password",
+                              type=str,
+                              required=True
+                              )
+    _user_parser.add_argument("new_password",
+                              type=str,
+                              required=True
+                              )
+
+    @classmethod
+    @jwt_required
+    def post(cls):
+        """Changes the password for current user with new_password. Fails if old_password does not match the current user's stored password.
+
+        Args:
+            old_password (str): Body param indicating the old password for current user.
+            new_password (str): Body param indicating the new password for current user.
+
+        Returns:
+            dict of (str, str): A confirmation message
+        """
+
+        data = cls._user_parser.parse_args()
+
+        username = get_jwt_identity()
+        try:
+            user = UserModel.find_by_username(username)
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        if not check_password_hash(user.password, data["old_password"]):
+            return {"message": "Incorrect password"}, 401  # Not authorized
+
+        try:
+            user.update_and_save(dict(password=data["new_password"]))
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        return {"message": "Password changed succesfully"}, 200

@@ -1,6 +1,7 @@
 from flask_restful import Api
 from blacklist import BLACKLIST
 from jwt_utils import bind_jwt_messages
+from resources.user import User, UserList, UserCreate, UserLogin, UserLogout, UserChangePassword
 from resources.user import User, UserList, UserCreate, UserLogin, UserLogout
 from resources.maintenance_activity import MaintenanceActivity, MaintenanceActivityCreate, MaintenanceActivityList
 
@@ -17,7 +18,7 @@ def create_app(config_class="config.Config"):
     api.add_resource(UserList, "/users")
     api.add_resource(UserLogin, "/login")
     api.add_resource(UserLogout, "/logout")
-
+    api.add_resource(UserChangePassword, "/change_password")
     api.add_resource(MaintenanceActivity, "/activity/<int:id>")
     api.add_resource(MaintenanceActivityCreate, "/activity")
     api.add_resource(MaintenanceActivityList, "/activities")
