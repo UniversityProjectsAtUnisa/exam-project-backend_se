@@ -48,8 +48,11 @@ class UserModel(db.Model):
             data (dict of (str, str)): Dictionary of username, hashed password and role, optionals.
         """
         for k in data:
-            if(data[k]):
+            if(data[k] and k != "password"):
                 setattr(self, k, data[k])
+            elif(k == "password"):
+                setattr(self, "password",
+                        generate_password_hash(data["password"]))
 
     def update_and_save(self, data):
         """Updates user instance with passed data and saves it to the database. 
