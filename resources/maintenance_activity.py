@@ -58,12 +58,23 @@ class MaintenanceActivity(Resource):
 
     @classmethod
     def get(cls, id):
-        """Gets one Maintenance Activity from database based on given id. 
+        """Gets one activity from database based on given id. 
             Fails if there is no activity with that id.
 
-        TODO
+        Args:
+            id (int): The identifier of the maintenance activity to be retrieved.
+
+        Returns:
+            dict of (str, any): Jsonified activity or error message.
         """
-        pass
+        try:
+            activity = MaintenanceActivityModel.find_by_id(id)
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        if not activity:
+            return {"message": "Activity not found"}, 404
+        return activity.json(), 200
 
     @classmethod
     def put(cls, id):
