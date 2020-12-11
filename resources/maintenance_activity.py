@@ -83,6 +83,25 @@ class MaintenanceActivity(Resource):
     @classmethod
     def delete(cls, id):
         """Deletes one activity from database based on given id. 
+            Fails if there is no activity with that id.
+
+        Args:
+            id (int): The identifier of the activity to be deleted.
+
+        Returns:
+            dict of (str, any): Confirmation or error message.
+        """
+        try:
+            activity = MaintenanceActivityModel.find_by_id(id)
+            if not activity:
+                return {"message": "Activity not found"}, 404
+            activity.delete_from_db()
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        return {"message": "Activity deleted"}, 200
+
 
 class MaintenanceActivityList(Resource):
     """Maintenance Activity API for get (multiple) operations."""
