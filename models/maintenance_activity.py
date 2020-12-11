@@ -1,6 +1,5 @@
 from db import db
 from common.utils import get_metadata
-#from sqlalchemy import CheckConstraint
 
 
 class MaintenanceActivityModel(db.Model):
@@ -24,7 +23,6 @@ class MaintenanceActivityModel(db.Model):
     def __init__(self, activity_id, activity_type, site, typology, description, estimated_time,
                  interruptible, week, materials=None, workspace_notes=None):
         """ 
-        TODO
         MaintenanceActivityModel constructor.
 
         Args:
@@ -53,7 +51,7 @@ class MaintenanceActivityModel(db.Model):
     def json(self):
         """Public representation for MaintenanceActivityModel instance.
         Returns:
-            TODO
+            dict of (str, str): The dictionary representation of Maintenance Activity.
         """
         return {
             "id": self.activity_id,
@@ -75,12 +73,9 @@ class MaintenanceActivityModel(db.Model):
 
     def update(self, data):
         """Updates activity's workspace notes with passed data.
-
         Args:
-        TODO
-
+            data (dict of (str, str)): Dictionary of activity's attributes.
         """
-        #setattr(self.workspace_notes, data)
         for k in data:
             if(data[k] and k == "workspace_notes"):
                 setattr(self, k, data[k])
@@ -89,8 +84,7 @@ class MaintenanceActivityModel(db.Model):
         """Updates MaintenanceActivityModel instance with passed data and saves it to the database. 
 
         Args:
-        TODO
-
+            data (dict of (str, str)): Dictionary of activity's attributes.
         """
         self.update(data)
         self.save_to_db()
@@ -105,19 +99,16 @@ class MaintenanceActivityModel(db.Model):
         """Finds a Maintenance Activity in the database based on given id.
         Args:
             activity_id (int): The identifier of the Maintenance Activity to retrieve.
-
-        TODO
         Returns:
-            UserModel: The found user
+            MaintenanceActivityModel: The found activity
         """
         return cls.query.filter_by(activity_id=activity_id).first()
 
     @classmethod
     def find_all(cls):
         """Finds every Maintenance Activity in the database
-        TODO
         Returns:
-            list of (UserModel): List of found Maintenance Activities
+            list of (MaintenanceActivityModel): List of found Maintenance Activities
         """
         return cls.query.all()
 
@@ -130,9 +121,10 @@ class MaintenanceActivityModel(db.Model):
             current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
             page_size (int, optional): The desired page size. Defaults to 10.
 
-        TODO
         Returns:
-
+            ( list of (MaintenanceActivityModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated MaintenanceActivityModel instances; 
+            The second tuple element is the pagination metadata;
             """
         rows = cls.query.offset(
             page_size*(current_page-1)).limit(page_size).all()
