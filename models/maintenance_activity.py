@@ -80,7 +80,10 @@ class MaintenanceActivityModel(db.Model):
         TODO
 
         """
-        setattr(self.workspace_notes, data)
+        #setattr(self.workspace_notes, data)
+        for k in data:
+            if(data[k] and k == "workspace_notes"):
+                setattr(self, k, data[k])
 
     def update_and_save(self, data):
         """Updates MaintenanceActivityModel instance with passed data and saves it to the database. 
