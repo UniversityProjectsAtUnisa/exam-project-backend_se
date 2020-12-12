@@ -145,7 +145,7 @@ class UserCreate(Resource):
                               help="Role should be admin, maintainer or planner"
                               )
 
-    @ classmethod
+    @classmethod
     @role_required()
     def post(cls):
         """Creates one user in the database. 
