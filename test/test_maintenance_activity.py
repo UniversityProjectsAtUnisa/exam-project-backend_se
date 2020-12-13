@@ -20,6 +20,11 @@ def activity_seeds():
         {'activity_id': '3', 'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
             'interruptible': 'yes', 'materials': 'spikes', 'week': '20', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+
+        # {'activity_id': '4', 'activity_type': 'extra', 'site': 'management',
+        #    'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
+        #    'interruptible': 'yes', 'materials': 'drill', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+
     ]
 
 
@@ -30,11 +35,9 @@ def unexisting_activity():
     Returns:
         dict of (str, str): the unexisting_activity
     """
-    return [
-        {'activity_id': '50', 'activity_type': 'planned', 'site': 'management',
+    return {'activity_type': 'planned', 'site': 'management',
             'typology': 'electronical', 'description': 'Planned electronical Maintenance Activity', 'estimated_time': '120',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'},
-    ]
+            'interruptible': 'yes', 'materials': 'spikes', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electronical'}
 
 
 @pytest.fixture(autouse=True)
@@ -138,7 +141,7 @@ def test_post_activity_missing_id(client):
     res = client.post('/activity', data=test_activity_without_id)
     assert res.status_code == 400
     assert 'message' in res.get_json().keys()
-    assert 'id' in res.get_json()['message'].keys()
+    assert 'id' in res.get_json()['activity_id'].keys()
 
 
 def test_put_activity_id_success(client, unexisting_activity, activity_seeds):
@@ -169,3 +172,11 @@ def test_delete_activity_not_found(client, unexisting_activity):
     res = client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
+
+
+def test_week(client, activity_seeds, unexisting_activity):
+    test_activity = unexisting_activity
+    res = client.get(f"/activities?week={test_activity['week']}")
+    assert res.status_code == 200
+    assert len(res.get_json()['rows']) <= len(activity_seeds)
+    #assert res.get_json()['week'] == test_activity['week']
