@@ -9,15 +9,15 @@ def activity_seeds():
         list of (dict of (str, str)): list of activities
     """
     return [
-        {'activity_id': '1', 'activity_type': 'planned', 'site': 'management',
+        {'activity_id': '101', 'activity_type': 'planned', 'site': 'management',
             'typology': 'electrical', 'description': 'Planned electrical Maintenance Activity', 'estimated_time': '30',
             'interruptible': 'yes', 'materials': 'drill', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
-        {'activity_id': '2', 'activity_type': 'unplanned', 'site': 'management',
+        {'activity_id': '102', 'activity_type': 'unplanned', 'site': 'management',
             'typology': 'electrical', 'description': 'Unplanned electrical Maintenance Activity', 'estimated_time': '45',
             'interruptible': 'no', 'materials': 'drill', 'week': '38', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
-        {'activity_id': '3', 'activity_type': 'extra', 'site': 'management',
+        {'activity_id': '103', 'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
             'interruptible': 'yes', 'materials': 'spikes', 'week': '20', 'workspace_notes': 'Site: Management; Typology: Electrical'},
     ]
@@ -28,13 +28,12 @@ def unexisting_activity():
     """Gets an activity that is not included in activity_seeds
 
     Returns:
-        dict of (str, str): the unexisting_activity
+        dict of (str, str): the unexisting activity
     """
-    return [
-        {'activity_id': '50', 'activity_type': 'planned', 'site': 'management',
+    return {'activity_id': '500', 'activity_type': 'planned', 'site': 'management',
             'typology': 'electronical', 'description': 'Planned electronical Maintenance Activity', 'estimated_time': '120',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'},
-    ]
+            'interruptible': 'yes', 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'}
+
 
 
 @pytest.fixture(autouse=True)
