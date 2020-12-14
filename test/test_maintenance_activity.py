@@ -35,6 +35,18 @@ def unexisting_activity():
             'interruptible': 'yes', 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'}
 
 
+@pytest.fixture
+def unexisting_activity_without_id():
+    """Gets an activity that is not included in activity_seeds and does not have an activity_id
+
+    Returns:
+        dict of (str, str): the unexisting activity without id
+    """
+    return {'activity_type': 'extra', 'site': 'management',
+            'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
+            'interruptible': 'yes', 'materials': 'spikes', 'week': '20',
+            'workspace_notes': 'Site: Management; Typology: Electrical'}
+
 
 @pytest.fixture(autouse=True)
 def setup(app, activity_seeds):
