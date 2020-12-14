@@ -48,8 +48,19 @@ def unexisting_activity_without_id():
             'workspace_notes': 'Site: Management; Typology: Electrical'}
 
 
+
+@pytest.fixture
+def planner_seed():
+    """Gets the mock planner user that will be used to prepopulate the database before each test
+
+    Returns:
+        (dict of (str, str):  mock planner user
+    """
+    return {'username': 'planner', 'password': 'password', 'role': 'planner'}
+
+
 @pytest.fixture(autouse=True)
-def setup(app, activity_seeds):
+def setup(app, activity_seeds, planner_seed):
     """Before each test it drops every table and recreates them. 
     Then it creates an activity for every dictionary present in activity_seeds
 
@@ -64,6 +75,9 @@ def setup(app, activity_seeds):
         for seed in activity_seeds:
             activity = MaintenanceActivityModel(**seed)
             activity.save_to_db()
+        from models.user import UserModel
+        planner = UserModel(**planner_seed)
+        planner.save_to_db()
     return True
 
 
