@@ -11,19 +11,15 @@ def activity_seeds():
     return [
         {'activity_id': '101', 'activity_type': 'planned', 'site': 'management',
             'typology': 'electrical', 'description': 'Planned electrical Maintenance Activity', 'estimated_time': '30',
-            'interruptible': 'yes', 'materials': 'drill', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+            'interruptible': 'yes', 'materials': 'drill', 'week': '1', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
         {'activity_id': '102', 'activity_type': 'unplanned', 'site': 'management',
             'typology': 'electrical', 'description': 'Unplanned electrical Maintenance Activity', 'estimated_time': '45',
-            'interruptible': 'no', 'materials': 'drill', 'week': '38', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+            'interruptible': 'no', 'materials': 'drill', 'week': '2', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
         {'activity_id': '103', 'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '20', 'workspace_notes': 'Site: Management; Typology: Electrical'},
-
-        # {'activity_id': '4', 'activity_type': 'extra', 'site': 'management',
-        #    'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
-        #    'interruptible': 'yes', 'materials': 'drill', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+            'interruptible': 'yes', 'materials': 'spikes', 'week': '3', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
     ]
 
@@ -173,6 +169,14 @@ def test_get_activities_success(planner_client, activity_seeds):
     assert res.get_json()['meta']['page_count'] == expected_page_count
 
 
+def test_get_activities_in_week_success(planner_client, activity_seeds):
+    test_activity = activity_seeds[0]
+    res = planner_client.get(f"/activities?week={test_activity['week']}")
+    assert res.status_code == 200
+    for activity in res.get_json()['rows']:
+        assert str(activity["week"]) == test_activity["week"]
+
+
 def test_get_activities_page_not_found(planner_client, activity_seeds):
     """ Test for a non-existing page """
     test_page_size = 5
@@ -252,11 +256,3 @@ def test_delete_activity_not_found(planner_client, unexisting_activity):
     res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
-
-
-def test_week(client, activity_seeds, unexisting_activity):
-    test_activity = unexisting_activity
-    res = client.get(f"/activities?week={test_activity['week']}")
-    assert res.status_code == 200
-    assert len(res.get_json()['rows']) <= len(activity_seeds)
-    #assert res.get_json()['week'] == test_activity['week']
