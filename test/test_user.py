@@ -23,7 +23,7 @@ def unexisting_user():
     """Gets an user that is not included in user_seeds
 
     Returns:
-        dict of (str, str): the unexisting_user
+        dict of (str, str): the unexisting user
     """
     return {'username': 'username', 'password': 'password', 'role': 'admin'}
 
