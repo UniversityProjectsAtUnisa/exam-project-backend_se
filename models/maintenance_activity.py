@@ -54,16 +54,16 @@ class MaintenanceActivityModel(db.Model):
             dict of (str, str): The dictionary representation of Maintenance Activity.
         """
         return {
-            "id": self.activity_id,
-            "type": self.activity_type,
+            "activity_id": self.activity_id,
+            "activity_type": self.activity_type,
             "site": self.site,
             "typology": self.typology,
             "description": self.description,
-            "estimated time": self.estimated_time,
+            "estimated_time": self.estimated_time,
             "interruptible": self.interruptible,
             "materials": self.materials,
             "week": self.week,
-            "workspace notes": self.workspace_notes
+            "workspace_notes": self.workspace_notes
         }
 
     def save_to_db(self):
