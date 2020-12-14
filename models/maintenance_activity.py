@@ -76,9 +76,8 @@ class MaintenanceActivityModel(db.Model):
         Args:
             data (dict of (str, str)): Dictionary of activity's attributes.
         """
-        for k in data:
-            if(data[k] and k == "workspace_notes"):
-                setattr(self, k, data[k])
+        if "workspace_notes" in data:
+            setattr(self, "workspace_notes", data["workspace_notes"])
 
     def update_and_save(self, data):
         """Updates MaintenanceActivityModel instance with passed data and saves it to the database. 
