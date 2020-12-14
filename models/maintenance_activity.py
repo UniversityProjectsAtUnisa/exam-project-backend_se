@@ -63,7 +63,9 @@ class MaintenanceActivityModel(db.Model):
             "interruptible": self.interruptible,
             "materials": self.materials,
             "week": self.week,
-            "workspace_notes": self.workspace_notes
+            "workspace_notes": self.workspace_notes,
+            "skills_needed": ["PAV certification", "Electrical Maintenance", "Knowledge of cable types",
+                              "XYZ-type robot knowledge", "Knowledge of robot workstation 23"]
         }
 
     def save_to_db(self):
