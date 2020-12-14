@@ -20,8 +20,8 @@ class MaintenanceActivityModel(db.Model):
         "week >= 1 AND week <= 52"))
     workspace_notes = db.Column(db.String(128), nullable=True)
 
-    def __init__(self, activity_id, activity_type, site, typology, description, estimated_time,
-                 interruptible, week, materials=None, workspace_notes=None):
+    def __init__(self, activity_type, site, typology, description, estimated_time,
+                 interruptible, week, materials=None, workspace_notes=None, activity_id=None):
         """ 
         MaintenanceActivityModel constructor.
 
