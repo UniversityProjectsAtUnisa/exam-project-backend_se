@@ -126,33 +126,35 @@ def planner_client(client, planner_seed):
 
 def test_unexisting_activity(activity_seeds, unexisting_activity):
     """ unexisting_activity's id should not be included among activity_seeds identifiers """
-    filtered_activity = list(filter(lambda activity: activity['activity_id'] ==
-                                    unexisting_activity['activity_id'], activity_seeds))
-    assert len(filtered_activity) == 0
+    filtered_activities = list(filter(lambda activity: activity['activity_id'] ==
+                                      unexisting_activity['activity_id'], activity_seeds))
+    assert len(filtered_activities) == 0
 
 
-def test_get_activity_success(client, activity_seeds):
+def test_get_activity_success(planner_client, activity_seeds):
     """ Test for searching an existing activity by his id """
-    test_activity = activity_seeds[0]
-    res = client.get(f"/activity/{test_activity['activity_id']}")
+    test_activity: dict = activity_seeds[0]
+    res = planner_client.get(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 200
-    assert res.get_json()['activity_id'] == test_activity['activity_id']
+    activity_json = res.get_json()
+    for k in test_activity.keys():
+        assert str(activity_json[k]) == test_activity[k]
 
 
-def test_get_activity_not_found(client, unexisting_activity):
+def test_get_activity_not_found(planner_client, unexisting_activity):
     """ Test for searching a non-existing activity """
     test_activity = unexisting_activity
-    res = client.get(f"/activity/{test_activity['activity_id']}")
+    res = planner_client.get(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
 
 
-def test_get_activities_success(client, activity_seeds):
+def test_get_activities_success(planner_client, activity_seeds):
     """ Test for getting correctly the first page of activities """
     test_current_page = 1
     test_page_size = len(activity_seeds) - 1
 
-    res = client.get(
+    res = planner_client.get(
         f"/activities?current_page={test_current_page}&page_size={test_page_size}")
 
     assert res.status_code == 200
@@ -166,74 +168,82 @@ def test_get_activities_success(client, activity_seeds):
     assert res.get_json()['meta']['page_count'] == expected_page_count
 
 
-def test_get_activities_page_not_found(client, activity_seeds):
+def test_get_activities_page_not_found(planner_client, activity_seeds):
     """ Test for a non-existing page """
     test_page_size = 5
     import math
     test_page_count = math.ceil(len(activity_seeds) / test_page_size)
     test_current_page = test_page_count + 1
-    res = client.get(
+    res = planner_client.get(
         f"/activities?current_page={test_current_page}&page_size={test_page_size}")
 
     assert res.status_code == 404
     assert "message" in res.get_json().keys()
 
 
-def test_post_activity_success(client, unexisting_activity):
-    """ Test for creating a new activity with a non-existing id """
-    test_activity = unexisting_activity
-    res = client.post('/activity', data=test_activity)
+def test_post_activity_success(planner_client, unexisting_activity_without_id):
+    """ Test for creating a new activity """
+    test_activity = unexisting_activity_without_id
+    res = planner_client.post('/activity', data=test_activity)
 
     assert res.status_code == 201
-    assert res.get_json()['activity_id'] == test_activity['activity_id']
+    activity_json = res.get_json()
+    for k in test_activity.keys():
+        assert test_activity[k] == str(
+            activity_json[k]), f"'{k}' for the created activity does not match the one sent to the post request, {test_activity[k]} != {activity_json[k]}"
 
 
-def test_post_activity_already_exists(client, activity_seeds):
-    """ Test for creating a new activity with an existing id """
-    test_activity = activity_seeds[0]
-    res = client.post('/activity', data=test_activity)
-
-    assert res.status_code == 400
-    assert 'message' in res.get_json().keys()
-
-
-def test_post_activity_missing_id(client):
-    """ Test for creating a new activity without id """
-    test_activity_without_id = {'activity_type': 'extra', 'site': 'management',
-                                'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
-                                'interruptible': 'yes', 'materials': 'spikes', 'week': '20',
-                                'workspace_notes': 'Site: Management; Typology: Electrical'}
-    res = client.post('/activity', data=test_activity_without_id)
-    assert res.status_code == 400
-    assert 'message' in res.get_json().keys()
-    assert 'id' in res.get_json()['message'].keys()
+def test_post_activity_missing_required_argument(planner_client, unexisting_activity_without_id, post_required_arguments):
+    """ Test for creating a new activity without a required argument """
+    import copy
+    for arg in post_required_arguments:
+        test_activity = copy.deepcopy(unexisting_activity_without_id)
+        del test_activity[arg]
+        res = planner_client.post('/activity', data=test_activity)
+        assert res.status_code == 400, f"Status code is not 400 when omitting required parameter '{arg}'"
+        assert 'message' in res.get_json().keys(
+        ), f"There is no error message in the response when omitting required parameter '{arg}'"
+        assert arg in res.get_json()['message'].keys(
+        ), f"The error message does not mention that the required parameter '{arg}' is missing"
 
 
-def test_put_activity_id_success(client, unexisting_activity, activity_seeds):
-    """ Test for modifying an activity's workspace notes 
-    TODO
-    """
+def test_post_activity_missing_optional_argument(planner_client, unexisting_activity_without_id, post_optional_arguments):
+    """ Test for creating a new activity without an optional argument """
+    import copy
+    for arg in post_optional_arguments:
+        test_activity = copy.deepcopy(unexisting_activity_without_id)
+        del test_activity[arg]
+        res = planner_client.post('/activity', data=test_activity)
+        assert res.status_code == 201, f"Status code is not 201 when omitting optional parameter '{arg}'"
+        activity_json = res.get_json()
+        for k in test_activity.keys():
+            assert test_activity[k] == str(
+                activity_json[k]), f"'{k}' for the created activity does not match the one sent to the post request when omitting the optional parameter , {test_activity[k]} != {activity_json[k]}"
+
+
+def test_put_activity_id_success(planner_client, unexisting_activity, activity_seeds):
+    """ Test for modifying an activity's workspace notes """
     test_activity = {'workspace_notes': unexisting_activity['workspace_notes']}
     test_old_activity = activity_seeds[0]
 
-    res = client.put(
-        f"/activity/{test_old_activity['workspace_notes']}", data=test_activity)
+    res = planner_client.put(
+        f"/activity/{test_old_activity['activity_id']}", data=test_activity)
     assert res.status_code == 200
     assert res.get_json()[
-        'workspace_notes'] == test_old_activity['workspace_notes']
+        'workspace_notes'] == test_activity['workspace_notes']
 
 
-def test_delete_activity_success(client, activity_seeds):
+def test_delete_activity_success(planner_client, activity_seeds):
     """ Test for deleting an existing activity """
     test_activity = activity_seeds[0]
-    res = client.delete(f"/activity/{test_activity['activity_id']}")
+    res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 200
     assert 'message' in res.get_json().keys()
 
 
-def test_delete_activity_not_found(client, unexisting_activity):
+def test_delete_activity_not_found(planner_client, unexisting_activity):
     """ Test for deleting a non-existing activity """
     test_activity = unexisting_activity
-    res = client.delete(f"/activity/{test_activity['activity_id']}")
+    res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
