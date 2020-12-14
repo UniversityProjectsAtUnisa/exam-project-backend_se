@@ -110,6 +110,20 @@ def setup(app, activity_seeds, planner_seed):
     return True
 
 
+@pytest.fixture
+def planner_client(client, planner_seed):
+    """ Creates a test client with preset planner authorization headers taken from the login endpoint 
+
+    Returns:
+        FlaskClient: The test client
+    """
+    res = client.post(
+        "/login", data=planner_seed)
+    access_token = res.get_json()["access_token"]
+    client.environ_base['HTTP_AUTHORIZATION'] = 'Bearer ' + access_token
+    return client
+
+
 def test_unexisting_activity(activity_seeds, unexisting_activity):
     """ unexisting_activity's id should not be included among activity_seeds identifiers """
     filtered_activity = list(filter(lambda activity: activity['activity_id'] ==
