@@ -48,6 +48,35 @@ def unexisting_activity_without_id():
             'workspace_notes': 'Site: Management; Typology: Electrical'}
 
 
+@pytest.fixture
+def post_required_arguments():
+    """List of body params required in order to perform a post request
+
+    Returns:
+        list of (str): The list of arguments
+    """
+    return ["activity_type",
+            "site",
+            "typology",
+            "description",
+            "estimated_time",
+            "interruptible",
+            "week",
+            ]
+
+
+@pytest.fixture
+def post_optional_arguments():
+    """List of optional body params in order taken by a post request
+
+    Returns:
+        list of (str): The list of arguments
+    """
+    return [
+        "materials",
+        "workspace_notes"
+    ]
+
 
 @pytest.fixture
 def planner_seed():
