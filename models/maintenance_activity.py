@@ -15,10 +15,10 @@ class MaintenanceActivityModel(db.Model):
     estimated_time = db.Column(db.Integer)
     interruptible = db.Column(db.Enum("yes", "no",
                                       name="interruptible_enum", create_type=False))
-    materials = db.Column(db.String(128), nullable=False)
+    materials = db.Column(db.String(128), nullable=True)
     week = db.Column(db.Integer, db.CheckConstraint(
         "week >= 1 AND week <= 52"))
-    workspace_notes = db.Column(db.String(128), nullable=False)
+    workspace_notes = db.Column(db.String(128), nullable=True)
 
     def __init__(self, activity_id, activity_type, site, typology, description, estimated_time,
                  interruptible, week, materials=None, workspace_notes=None):
