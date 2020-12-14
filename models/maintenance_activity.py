@@ -6,7 +6,7 @@ class MaintenanceActivityModel(db.Model):
     """Maintenance Activity class for database interaction"""
     __tablename__ = "maintenance activity"
 
-    activity_id = db.Column((db.Integer), primary_key=True)
+    activity_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     activity_type = db.Column(db.Enum("planned", "unplanned", "extra",
                                       name="type_enum", create_type=False))
     site = db.Column(db.String(128))
