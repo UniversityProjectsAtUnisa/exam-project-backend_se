@@ -85,6 +85,10 @@ class MaintenanceActivity(Resource):
 class MaintenanceActivityList(Resource):
     """Maintenance Activity API for get (multiple) operations."""
     _activity_parser = reqparse.RequestParser()
+    _activity_parser.add_argument("week",
+                                  type=int,
+                                  required=False
+                                  )
     _activity_parser.add_argument("current_page",
                                   type=int,
                                   default=1
@@ -107,8 +111,14 @@ class MaintenanceActivityList(Resource):
             dict of (str, any): Json of rows and meta. Rows is the list of paginated activities; meta is its metadata;
         """
         data = cls._activity_parser.parse_args()
-        rows, meta = MaintenanceActivityModel.find_some(**data)
-        return {"rows": [user.json() for user in rows], "meta": meta}, 200
+        rows = meta = None
+        if data["week"]:
+            rows, meta = MaintenanceActivityModel.find_some_in_week(
+                **data)
+        else:
+            rows, meta = MaintenanceActivityModel.find_some(
+                data["current_page"], data["page_size"])
+        return {"rows": [activity.json() for activity in rows], "meta": meta}, 200
 
 
 class MaintenanceActivityCreate(Resource):

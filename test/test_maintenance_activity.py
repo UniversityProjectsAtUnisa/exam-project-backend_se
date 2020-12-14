@@ -20,6 +20,11 @@ def activity_seeds():
         {'activity_id': '103', 'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
             'interruptible': 'yes', 'materials': 'spikes', 'week': '20', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+
+        # {'activity_id': '4', 'activity_type': 'extra', 'site': 'management',
+        #    'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
+        #    'interruptible': 'yes', 'materials': 'drill', 'week': '43', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+
     ]
 
 
@@ -247,3 +252,11 @@ def test_delete_activity_not_found(planner_client, unexisting_activity):
     res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
     assert 'message' in res.get_json().keys()
+
+
+def test_week(client, activity_seeds, unexisting_activity):
+    test_activity = unexisting_activity
+    res = client.get(f"/activities?week={test_activity['week']}")
+    assert res.status_code == 200
+    assert len(res.get_json()['rows']) <= len(activity_seeds)
+    #assert res.get_json()['week'] == test_activity['week']
