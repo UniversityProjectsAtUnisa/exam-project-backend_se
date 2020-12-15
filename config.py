@@ -18,6 +18,10 @@ ENVIRONMENT = "development" if getenv(
 JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
 JWT_TOKEN_EXPIRES = int(getenv("JWT_TOKEN_EXPIRES", "3600"))
 
+# Configurable maintainer constants
+MAINTAINER_WORK_START_HOUR = int(getenv("MAINTAINER_WORK_START_HOUR", "8"))
+MAINTAINER_WORK_HOURS = int(getenv("MAINTAINER_WORK_HOURS", "9"))
+
 
 class Config:
     """Flask Config class."""
