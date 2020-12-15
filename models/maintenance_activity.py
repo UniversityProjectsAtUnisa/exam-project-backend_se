@@ -74,12 +74,12 @@ class MaintenanceActivityModel(db.Model):
         db.session.commit()
 
     def update(self, data):
-        """Updates activity's workspace notes with passed data.
+        """Updates activity with passed data.
         Args:
-            data (dict of (str, str)): Dictionary of activity's attributes.
+            data (dict of (str, str)): Dictionary of activity's new attributes.
         """
-        if "workspace_notes" in data:
-            setattr(self, "workspace_notes", data["workspace_notes"])
+        for k in data:
+            setattr(self, k, data[k])
 
     def update_and_save(self, data):
         """Updates MaintenanceActivityModel instance with passed data and saves it to the database. 
