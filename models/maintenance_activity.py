@@ -12,10 +12,13 @@ class MaintenanceActivityModel(db.Model):
     site = db.Column(db.String(128))
     typology = db.Column(db.String(128))
     description = db.Column(db.String(128))
-    estimated_time = db.Column(db.Integer)
+
+    # TODO: Remove this enum and substitute it with simple boolean
     interruptible = db.Column(db.Enum("yes", "no",
                                       name="interruptible_enum", create_type=False))
     materials = db.Column(db.String(128), nullable=True)
+    workspace_notes = db.Column(db.String(128), nullable=True)
+    estimated_time = db.Column(db.Integer)
     week = db.Column(db.Integer, db.CheckConstraint(
         "week >= 1 AND week <= 52"))
     workspace_notes = db.Column(db.String(128), nullable=True)
