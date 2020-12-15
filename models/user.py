@@ -136,3 +136,10 @@ class UserModel(db.Model):
         )
         return rows, meta
 
+    def get_daily_activities(self, week, week_day):
+        if(self.role != "maintainer"):
+            raise RoleError(
+                "The user is not a maintaner, therefore it does not have availabilities")
+        return MaintenanceActivityModel.find_all_in_day_for_user(
+            self.username, week, week_day)
+

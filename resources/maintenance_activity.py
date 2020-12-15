@@ -230,7 +230,7 @@ class MaintenanceActivityAssign(Resource):
             if user.role != "maintainer":
                 return {"message": "User role for user with given username is not 'maintainer'"}, 400
 
-            is_doable, reason = user.can_do(
+            is_doable, reason = user.can_do_activity(
                 id, data["week_day"], data["start_time"])
             if not is_doable:
                 return {"message": reason}
