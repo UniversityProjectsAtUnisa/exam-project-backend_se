@@ -143,3 +143,67 @@ class UserModel(db.Model):
         return MaintenanceActivityModel.find_all_in_day_for_user(
             self.username, week, week_day)
 
+    class DailyAgenda:
+        created_at = time.time()
+
+        def __init__(self, user, week, week_day):
+            self.user: UserModel = user
+            self.week: int = week
+            self.week_day: int = week_day
+            activities = user.get_daily_activities(self.week, self.week_day)
+            self.agenda = self._calculate_agenda_dictionary(activities)
+
+        def json(self):
+            return self.agenda
+
+        def _calculate_agenda_dictionary(self, activities):
+            d = {}
+
+            for hour in range(self.user.work_start_hour, self.user.work_start_hour+self.user.work_hours):
+                d[hour] = 60
+            for activity in activities:
+                d[activity.start_time] -= activity.estimated_time
+
+            visited_hours = []
+            for hour in sorted(d.keys(), reverse=True):
+                if(d[hour] < 0):
+                    for visited_hour in reversed(visited_hours):
+                        if (d[hour] > -d[visited_hour]):
+                            d[hour] += d[visited_hour]
+                            d[visited_hour] = 0
+                        else:
+                            d[visited_hour] += d[hour]
+                            d[hour] = 0
+                            break
+                    if d[hour] != 0:
+                        raise InvalidAgendaError()
+
+                visited_hours.append(hour)
+            return d
+
+        def is_activity_insertable(self, activity_id, start_time) -> tuple[bool, str]:
+            if start_time < self.user.work_start_hour or start_time > self.user.work_start_hour + self.user.work_hours:
+                return False, "Invalid start_time"
+            activity = MaintenanceActivityModel.find_by_id(activity_id)
+            if not activity:
+                return False, "Activity not found"
+
+            activity.start_time = start_time
+            activities = self.user.get_daily_activities(
+                self.week, self.week_day)
+            activities = list(
+                filter(lambda a: a.activity_id != activity.activity_id, activities))
+            activities.append(activity)
+            try:
+                self._calculate_agenda_dictionary(activities)
+                return True, "Ok"
+            except InvalidAgendaError as e:
+                return False, e.message
+
+    def get_daily_agenda(self, week, week_day):
+        if(self.role != "maintainer"):
+            raise RoleError(
+                "The user is not a maintaner, therefore it does not have availabilities")
+        return self.DailyAgenda(
+            self, week, week_day)
+
