@@ -111,13 +111,17 @@ class MaintenanceActivityList(Resource):
             dict of (str, any): Json of rows and meta. Rows is the list of paginated activities; meta is its metadata;
         """
         data = cls._activity_parser.parse_args()
-        rows = meta = None
-        if data["week"]:
-            rows, meta = MaintenanceActivityModel.find_some_in_week(
-                **data)
-        else:
-            rows, meta = MaintenanceActivityModel.find_some(
-                data["current_page"], data["page_size"])
+        rows, meta = [], {}
+        try:
+            if data["week"]:
+                rows, meta = MaintenanceActivityModel.find_some_in_week(
+                    **data)
+            else:
+                rows, meta = MaintenanceActivityModel.find_some(
+                    data["current_page"], data["page_size"])
+        except Exception as e:
+            return {"error": str(e)}, 500
+
         return {"rows": [activity.json() for activity in rows], "meta": meta}, 200
 
 
