@@ -4,6 +4,7 @@ from jwt_utils import bind_jwt_messages
 from resources.user import User, UserList, UserCreate, UserLogin, UserLogout, UserChangePassword
 from resources.user import User, UserList, UserCreate, UserLogin, UserLogout
 from resources.maintenance_activity import MaintenanceActivity, MaintenanceActivityCreate, MaintenanceActivityList, MaintenanceActivityAssign
+from resources.maintainer_availability import MaintainerWeeklyAvailabilityList, MaintainerDailyAvailability
 
 
 def create_app(config_class="config.Config"):
@@ -22,6 +23,10 @@ def create_app(config_class="config.Config"):
     api.add_resource(MaintenanceActivity, "/activity/<int:id>")
     api.add_resource(MaintenanceActivityCreate, "/activity")
     api.add_resource(MaintenanceActivityList, "/activities")
+    api.add_resource(MaintainerWeeklyAvailabilityList,
+                     "/maintainer/<int:week>/availabilities")
+    api.add_resource(MaintainerDailyAvailability,
+                     "/maintainer/<string:username>/availability")
     api.add_resource(MaintenanceActivityAssign,
                      "/activity/<int:id>/assign")
     return app
