@@ -217,7 +217,7 @@ class UserLogin(Resource):
 
         access_token = create_access_token(
             identity=user.username, user_claims=user.json())
-        return {"access_token": access_token}, 200
+        return {"access_token": access_token, "user": user.json()}, 200
 
 
 class UserLogout(Resource):
