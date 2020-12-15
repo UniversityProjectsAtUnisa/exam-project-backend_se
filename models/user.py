@@ -237,3 +237,29 @@ class UserModel(db.Model):
 
     def get_daily_percentage_availability(self, week, week_day):
         return self.DailyPercentageAvailability(self, week, week_day).json()
+
+    class WeeklyPercentageAvailability:
+        _week_days = ["monday", "tuesday", "wednesday",
+                      "thursday", "friday", "saturday", "sunday"]
+
+        def __init__(self, user, week):
+            if(user.role != "maintainer"):
+                raise RoleError(
+                    "The user is not a maintaner, therefore it does not have availabilities")
+            self.user: UserModel = user
+            self.week = week
+            self.d = self._calculate_weekly_percentage_availability_dictionary()
+
+        def _calculate_weekly_percentage_availability_dictionary(self):
+            d = {}
+            for week_day in self._week_days:
+                d[week_day] = self.user.get_daily_percentage_availability(
+                    self.week, week_day)
+            return d
+
+        def json(self):
+            return self.d
+
+    def get_weekly_percentage_availability(self, week):
+        return self.WeeklyPercentageAvailability(
+            self, week)
