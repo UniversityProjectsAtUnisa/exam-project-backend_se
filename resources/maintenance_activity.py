@@ -1,4 +1,6 @@
+from config import MAINTAINER_WORK_HOURS, MAINTAINER_WORK_START_HOUR
 from models.maintenance_activity import MaintenanceActivityModel
+from models.user import UserModel
 from flask_restful import Resource, reqparse
 from jwt_utils import role_required
 
@@ -15,7 +17,7 @@ class MaintenanceActivity(Resource):
     @classmethod
     @role_required("planner")
     def get(cls, id):
-        """Gets one activity from database based on given id. 
+        """Gets one activity from database based on given id.
             Fails if there is no activity with that id.
 
         Args:
@@ -36,7 +38,7 @@ class MaintenanceActivity(Resource):
     @classmethod
     @role_required("planner")
     def put(cls, id):
-        """Edits one activity in the database based on given id. 
+        """Edits one activity in the database based on given id.
             Fails if there is no activity with that id.
 
         Args:
@@ -61,7 +63,7 @@ class MaintenanceActivity(Resource):
     @classmethod
     @role_required("planner")
     def delete(cls, id):
-        """Deletes one activity from database based on given id. 
+        """Deletes one activity from database based on given id.
             Fails if there is no activity with that id.
 
         Args:
@@ -177,7 +179,7 @@ class MaintenanceActivityCreate(Resource):
     @classmethod
     @role_required("planner")
     def post(cls):
-        """Creates one activity in the database. 
+        """Creates one activity in the database.
 
         Returns:
             dict of (str, any): Jsonified activity or error message.
@@ -191,3 +193,51 @@ class MaintenanceActivityCreate(Resource):
             return {"error": str(e)}, 500
 
         return activity.json(), 201
+
+
+class MaintenanceActivityAssign(Resource):
+    _activity_parser = reqparse.RequestParser()
+    _activity_parser.add_argument("maintainer_username",
+                                  type=str,
+                                  required=True,
+                                  help="maintainer_username should be a valid maintainer username"
+                                  )
+    _activity_parser.add_argument("week_day",
+                                  type=str,
+                                  required=True,
+                                  help="Week should be a valid weekday name (i.e: monday, tuesday, ...)"
+                                  )
+    _activity_parser.add_argument("start_time",
+                                  type=int,
+                                  required=True,
+                                  help=f"start_time should be an integer between {MAINTAINER_WORK_START_HOUR} and {MAINTAINER_WORK_START_HOUR + MAINTAINER_WORK_HOURS}"
+                                  )
+
+    @classmethod
+    @role_required("planner")
+    def put(cls, id):
+        data = cls._activity_parser.parse_args()
+
+        try:
+            activity = MaintenanceActivityModel.find_by_id(id)
+            if not activity:
+                return {"message": "Activity not found"}, 404
+
+            user = UserModel.find_by_username(data["maintainer_username"])
+            if not user:
+                return {"message": "User not found"}, 404
+
+            if user.role != "maintainer":
+                return {"message": "User role for user with given username is not 'maintainer'"}, 400
+
+            is_doable, reason = user.can_do(
+                id, data["week_day"], data["start_time"])
+            if not is_doable:
+                return {"message": reason}
+
+            activity.update_and_save(data)
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+        return {"message": "Activity assigned successfully"}, 200
