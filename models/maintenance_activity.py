@@ -185,11 +185,15 @@ class MaintenanceActivityModel(db.Model):
 
     @classmethod
     def find_some_in_week(cls, week, current_page=1, page_size=10):
-        rows = cls.query.filter_by(week=week).offset(
-            page_size*(current_page-1)).limit(page_size).all()
+        rows = (cls.query
+                .filter_by(week=week)
+                .offset(page_size*(current_page-1))
+                .limit(page_size)
+                .all())
 
         meta = get_metadata(
-            cls.query.filter_by(week=week).paginate(
-                page=current_page, per_page=page_size)
+            cls.query
+            .filter_by(week=week)
+            .paginate(page=current_page, per_page=page_size)
         )
         return rows, meta
