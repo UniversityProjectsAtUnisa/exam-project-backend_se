@@ -120,3 +120,19 @@ class UserModel(db.Model):
             cls.query.paginate(page=current_page, per_page=page_size)
         )
         return rows, meta
+
+    @classmethod
+    def find_all_maintainers(cls):
+        return cls.query.filter_by(role="maintainer").all()
+
+    @classmethod
+    def find_some_maintainers(cls, current_page=1, page_size=10):
+        rows = cls.query.filter_by(role="maintainer").offset(
+            page_size*(current_page-1)).limit(page_size).all()
+
+        meta = get_metadata(
+            cls.query.filter_by(role="maintainer").paginate(
+                page=current_page, per_page=page_size)
+        )
+        return rows, meta
+
