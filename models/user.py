@@ -207,6 +207,13 @@ class UserModel(db.Model):
         return self.DailyAgenda(
             self, week, week_day)
 
+    def can_do_activity(self, activity_id, week_day, start_time):
+        activity = MaintenanceActivityModel.find_by_id(activity_id)
+        if not activity:
+            return False, "Activity not found"
+        daily_agenda = self.DailyAgenda(self, activity.week, week_day)
+        return daily_agenda.is_activity_insertable(activity_id, start_time)
+
     class DailyPercentageAvailability:
         def __init__(self, user, week, week_day):
             if(user.role != "maintainer"):
