@@ -197,3 +197,8 @@ class MaintenanceActivityModel(db.Model):
             .paginate(page=current_page, per_page=page_size)
         )
         return rows, meta
+
+    @classmethod
+    def get_total_estimated_time(cls, activities) -> int:
+        return reduce(lambda acc,
+                      activity: acc + activity.estimated_time, activities, 0)
