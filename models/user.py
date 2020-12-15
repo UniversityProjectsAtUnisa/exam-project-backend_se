@@ -207,3 +207,26 @@ class UserModel(db.Model):
         return self.DailyAgenda(
             self, week, week_day)
 
+    class DailyPercentageAvailability:
+        def __init__(self, user, week, week_day):
+            if(user.role != "maintainer"):
+                raise RoleError(
+                    "The user is not a maintaner, therefore it does not have availabilities")
+            self.user: UserModel = user
+            self.week = week
+            self.week_day = week_day
+            self.d = self._calculate_daily_percentage_availability()
+
+        def json(self):
+            return self.d
+
+        def _calculate_daily_percentage_availability(self):
+            activities = self.user.get_daily_activities(
+                self.week, self.week_day)
+            busy_minutes = MaintenanceActivityModel.get_total_estimated_time(
+                activities)
+            busy_hours = busy_minutes / 60
+            return f"{ round(100 - ( 100 * busy_hours/self.user.work_hours)) }%"
+
+    def get_daily_percentage_availability(self, week, week_day):
+        return self.DailyPercentageAvailability(self, week, week_day).json()
