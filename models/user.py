@@ -1,6 +1,11 @@
+from models.maintenance_activity import MaintenanceActivityModel
 from db import db
 from common.utils import get_metadata
 from werkzeug.security import generate_password_hash
+from config import MAINTAINER_WORK_HOURS, MAINTAINER_WORK_START_HOUR
+from exceptions.role_error import RoleError
+from exceptions.invalid_agenda_error import InvalidAgendaError
+import time
 
 
 class UserModel(db.Model):
@@ -11,6 +16,12 @@ class UserModel(db.Model):
     password = db.Column(db.String(128))
     role = db.Column(db.Enum("admin", "maintainer", "planner",
                              name="role_enum", create_type=False))
+
+    maintenance_activities = db.relationship(
+        "MaintenanceActivityModel", lazy="dynamic")
+
+    work_hours = MAINTAINER_WORK_HOURS
+    work_start_hour = MAINTAINER_WORK_START_HOUR
 
     def __init__(self, username, password, role):
         """UserModel constructor.

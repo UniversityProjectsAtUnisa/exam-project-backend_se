@@ -1,5 +1,7 @@
 from db import db
 from common.utils import get_metadata
+from config import MAINTAINER_WORK_HOURS, MAINTAINER_WORK_START_HOUR
+from functools import reduce
 
 
 class MaintenanceActivityModel(db.Model):
@@ -21,7 +23,15 @@ class MaintenanceActivityModel(db.Model):
     estimated_time = db.Column(db.Integer)
     week = db.Column(db.Integer, db.CheckConstraint(
         "week >= 1 AND week <= 52"))
-    workspace_notes = db.Column(db.String(128), nullable=True)
+    week_day = db.Column(db.Enum("monday", "tuesday", "wednesday", "thursday",
+                                 "friday", "saturday", "sunday", name="week_day_enum", create_type=False), nullable=True)
+    start_time = db.Column(db.Integer,  db.CheckConstraint(
+        f"start_time >= {MAINTAINER_WORK_START_HOUR} AND start_time <= {MAINTAINER_WORK_START_HOUR + MAINTAINER_WORK_HOURS}"), nullable=True)
+
+    maintainer_username = db.Column(db.String(128),
+                                    db.ForeignKey("users.username"),
+                                    nullable=True)
+    maintainer = db.relationship("UserModel")
 
     def __init__(self, activity_type, site, typology, description, estimated_time,
                  interruptible, week, materials=None, workspace_notes=None, activity_id=None):
