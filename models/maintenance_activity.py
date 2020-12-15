@@ -4,7 +4,7 @@ from common.utils import get_metadata
 
 class MaintenanceActivityModel(db.Model):
     """Maintenance Activity class for database interaction"""
-    __tablename__ = "maintenance activity"
+    __tablename__ = "maintenance_activities"
 
     activity_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     activity_type = db.Column(db.Enum("planned", "unplanned", "extra",
