@@ -136,6 +136,50 @@ class MaintenanceActivityModel(db.Model):
         return rows, meta
 
     @classmethod
+    def find_all_in_day(cls, week, week_day):
+        return cls.query.filter_by(week=week).filter_by(week_day=week_day).all()
+
+    @classmethod
+    def find_some_in_day(cls, week, week_day, current_page=1, page_size=10):
+        rows = (cls.query
+                .filter_by(week=week)
+                .filter_by(week_day=week_day)
+                .offset(page_size*(current_page-1))
+                .limit(page_size)
+                .all())
+
+        meta = get_metadata(
+            cls.query
+            .filter_by(week=week)
+            .filter_by(week_day=week_day)
+            .paginate(page=current_page, per_page=page_size)
+        )
+        return rows, meta
+
+    @classmethod
+    def find_all_in_day_for_user(cls, username, week, week_day):
+        return cls.query.filter_by(maintainer_username=username).filter_by(week=week).filter_by(week_day=week_day).all()
+
+    @classmethod
+    def find_some_in_day_for_user(cls, username, week, week_day, current_page=1, page_size=10):
+        rows = (cls.query
+                .filter_by(maintainer_username=username)
+                .filter_by(week=week)
+                .filter_by(week_day=week_day)
+                .offset(page_size*(current_page-1))
+                .limit(page_size)
+                .all())
+
+        meta = get_metadata(
+            cls.query
+            .filter_by(maintainer_username=username)
+            .filter_by(week=week)
+            .filter_by(week_day=week_day)
+            .paginate(page=current_page, per_page=page_size)
+        )
+        return rows, meta
+
+    @classmethod
     def find_all_in_week(cls, week):
         return cls.query.filter_by(week=week).all()
 
