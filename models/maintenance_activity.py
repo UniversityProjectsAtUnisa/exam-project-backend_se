@@ -212,6 +212,6 @@ class MaintenanceActivityModel(db.Model):
         return rows, meta
 
     @classmethod
-    def get_total_estimated_time(cls, activities) -> int:
+    def get_total_estimated_time(cls, activities):
         return reduce(lambda acc,
                       activity: acc + activity.estimated_time, activities, 0)

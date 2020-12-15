@@ -181,7 +181,7 @@ class UserModel(db.Model):
                 visited_hours.append(hour)
             return d
 
-        def is_activity_insertable(self, activity_id, start_time) -> tuple[bool, str]:
+        def is_activity_insertable(self, activity_id, start_time):
             if start_time < self.user.work_start_hour or start_time > self.user.work_start_hour + self.user.work_hours:
                 return False, "Invalid start_time"
             activity = MaintenanceActivityModel.find_by_id(activity_id)
