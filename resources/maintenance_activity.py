@@ -156,9 +156,9 @@ class MaintenanceActivityCreate(Resource):
                                   help="Estimated Time should be the expected duration of the activty, in minutes"
                                   )
     _activity_parser.add_argument("interruptible",
-                                  type=str,
+                                  type=bool,
                                   required=True,
-                                  help="Interruptible should be yes or not"
+                                  help="Interruptible should be True (yes) or False (not)"
                                   )
     _activity_parser.add_argument("materials",
                                   type=str,

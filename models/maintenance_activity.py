@@ -14,10 +14,7 @@ class MaintenanceActivityModel(db.Model):
     site = db.Column(db.String(128))
     typology = db.Column(db.String(128))
     description = db.Column(db.String(128))
-
-    # TODO: Remove this enum and substitute it with simple boolean
-    interruptible = db.Column(db.Enum("yes", "no",
-                                      name="interruptible_enum", create_type=False))
+    interruptible = db.Column(db.Boolean)
     materials = db.Column(db.String(128), nullable=True)
     workspace_notes = db.Column(db.String(128), nullable=True)
     estimated_time = db.Column(db.Integer)
@@ -45,7 +42,7 @@ class MaintenanceActivityModel(db.Model):
             typology(String): Typology of the Activity
             description(String): Description of the Activity
             estimated_time(int): Expected Activity's lifetime in minutes
-            interruptible(String): Is the Activity interruptible by a Emergency Work Order?
+            interruptible(Boolean): Is the Activity interruptible by a Emergency Work Order?
             materials(String): List of materials to be used during the Activity
             week(int): Week (1 to 52) in which the activity will be performed
             workspace_notes(String): Editable description of the workspace
