@@ -125,11 +125,7 @@ class UserList(Resource):
             dict of (str, any): Json of rows and meta. Rows is the list of paginated users; meta is its metadata;
         """
         data = cls._user_parser.parse_args()
-        rows, meta = [], {}
-        try:
-            rows, meta = UserModel.find_some(**data)
-        except Exception as e:
-            return {"error": str(e)}, 500
+        rows, meta = UserModel.find_some(**data)
         return {"rows": [user.json() for user in rows], "meta": meta}, 200
 
 

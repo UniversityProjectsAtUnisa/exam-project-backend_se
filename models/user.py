@@ -166,14 +166,12 @@ class UserModel(db.Model):
 
             visited_hours = []
             for hour in sorted(d.keys(), reverse=True):
-                if(d[hour] < 0):
+                if d[hour] < 0:
                     for visited_hour in reversed(visited_hours):
-                        if (d[hour] > -d[visited_hour]):
-                            d[hour] += d[visited_hour]
-                            d[visited_hour] = 0
-                        else:
-                            d[visited_hour] += d[hour]
-                            d[hour] = 0
+                        m = min(d[visited_hour], -d[hour])
+                        d[visited_hour] -= m
+                        d[hour] += m
+                        if d[hour] >= 0:
                             break
                     if d[hour] != 0:
                         raise InvalidAgendaError()

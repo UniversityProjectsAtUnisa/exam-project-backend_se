@@ -24,7 +24,7 @@ def create_app(config_class="config.Config"):
     api.add_resource(MaintenanceActivityCreate, "/activity")
     api.add_resource(MaintenanceActivityList, "/activities")
     api.add_resource(MaintainerWeeklyAvailabilityList,
-                     "/maintainer/<int:week>/availabilities")
+                     "/maintainer/<int:activity_id>/availabilities")
     api.add_resource(MaintainerDailyAvailability,
                      "/maintainer/<string:username>/availability")
     api.add_resource(MaintenanceActivityAssign,

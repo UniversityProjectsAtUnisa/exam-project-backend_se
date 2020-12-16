@@ -114,15 +114,12 @@ class MaintenanceActivityList(Resource):
         """
         data = cls._activity_parser.parse_args()
         rows, meta = [], {}
-        try:
-            if data["week"]:
-                rows, meta = MaintenanceActivityModel.find_some_in_week(
-                    **data)
-            else:
-                rows, meta = MaintenanceActivityModel.find_some(
-                    data["current_page"], data["page_size"])
-        except Exception as e:
-            return {"error": str(e)}, 500
+        if data["week"]:
+            rows, meta = MaintenanceActivityModel.find_some_in_week(
+                **data)
+        else:
+            rows, meta = MaintenanceActivityModel.find_some(
+                data["current_page"], data["page_size"])
 
         return {"rows": [activity.json() for activity in rows], "meta": meta}, 200
 
