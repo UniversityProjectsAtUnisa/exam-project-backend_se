@@ -230,7 +230,7 @@ class MaintenanceActivityAssign(Resource):
             is_doable, reason = user.can_do_activity(
                 id, data["week_day"], data["start_time"])
             if not is_doable:
-                return {"message": reason}
+                return {"message": reason}, 400
 
             activity.update_and_save(data)
 

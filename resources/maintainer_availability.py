@@ -43,7 +43,7 @@ class MaintainerWeeklyAvailabilityList(Resource):
         return {"rows": [
             {"user": user.json(),
                 "skill_compliance": "3/5",
-                "weekly_percentage_availability": user.get_weekly_percentage_availability(activity.week).json(),
+                "weekly_percentage_availability": user.get_weekly_percentage_availability(activity.week, exclude=activity_id).json(),
                 "week": activity.week
              } for user in rows
         ], "meta": meta}, 200
@@ -93,7 +93,8 @@ class MaintainerDailyAvailability(Resource):
             if not activity:
                 return {"message": "Activity not found"}, 404
 
-            agenda = user.get_daily_agenda(activity.week, data["week_day"])
+            agenda = user.get_daily_agenda(
+                activity.week, data["week_day"], exclude=data["activity_id"])
         except Exception as e:
             return {"error": str(e)}, 500
 

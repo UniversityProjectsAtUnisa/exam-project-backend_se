@@ -167,8 +167,24 @@ class MaintenanceActivityModel(db.Model):
         return rows, meta
 
     @classmethod
-    def find_all_in_day_for_user(cls, username, week, week_day):
-        return cls.query.filter_by(maintainer_username=username).filter_by(week=week).filter_by(week_day=week_day).all()
+    def find_all_in_day_for_user(cls, username, week, week_day, exclude=None):
+        """Finds every Maintenance Activity for a given day and a given user
+
+        Args:
+            username (str): The username for the maintainer who has to perform those maintenance activities
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+            exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+        Returns:
+            list of (MaintenanceActivityModel): List of found Maintenance Activities
+        """
+        activities = cls.query.filter_by(maintainer_username=username).filter_by(
+            week=week).filter_by(week_day=week_day).all()
+        if exclude:
+            activities = list(
+                filter(lambda activity: activity.activity_id != exclude, activities))
+        return activities
 
     @classmethod
     def find_some_in_day_for_user(cls, username, week, week_day, current_page=1, page_size=10):

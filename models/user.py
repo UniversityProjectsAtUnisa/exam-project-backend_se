@@ -136,27 +136,66 @@ class UserModel(db.Model):
         )
         return rows, meta
 
-    def get_daily_activities(self, week, week_day):
+    def get_daily_activities(self, week, week_day, exclude=None):
         if(self.role != "maintainer"):
             raise RoleError(
                 "The user is not a maintaner, therefore it does not have availabilities")
         return MaintenanceActivityModel.find_all_in_day_for_user(
-            self.username, week, week_day)
+            self.username, week, week_day, exclude)
 
     class DailyAgenda:
-        created_at = time.time()
+        """A class used to represent the daily availability for a user with role 'maintainer'
 
-        def __init__(self, user, week, week_day):
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+            InvalidAgendaError: If the user does not have enough time to perform the maintenance activities
+
+        Returns:
+            DailyAgenda: An object with information about the user, the day associated with the agenda 
+            and a dictionary with his availabilities classified by hour
+        """
+        _created_at = time.time()
+
+        def __init__(self, user, week, week_day, exclude=None):
+            """DailyAgenda constructor
+
+            Args:
+                user (UserModel): The user associated with the DailyAgenda
+                week (int): The nth week of the year
+                week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+                exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+            Raises:
+                RoleError: If the user's role is not 'maintainer'
+            """
+            if(user.role != "maintainer"):
+                raise RoleError(
+                    "The user is not a maintaner, therefore it does not have availabilities")
             self.user: UserModel = user
             self.week: int = week
             self.week_day: int = week_day
-            activities = user.get_daily_activities(self.week, self.week_day)
-            self.agenda = self._calculate_agenda_dictionary(activities)
+            self.exclude = exclude
+            self.agenda = self._calculate_agenda_dictionary()
 
         def json(self):
             return self.agenda
 
-        def _calculate_agenda_dictionary(self, activities):
+        def _calculate_agenda_dictionary(self, append=None):
+            """Private method used to calculate the dictionary of user's daily availabilities
+
+            Args:
+                append (MaintenanceActivityModel, optional): a MaintenanceActivityModel that has to be included in the agenda dictionary calculation
+
+            Raises:
+                InvalidAgendaError: If the user does not have enough time to perform the maintenance activities
+
+            Returns:
+                dict of (str, int): The dictionary with the work hour as key and the minutes left free for the user in that hour
+            """
+            activities = self.user.get_daily_activities(
+                self.week, self.week_day, self.exclude)
+            if append:
+                activities.append(append)
             d = {}
 
             for hour in range(self.user.work_start_hour, self.user.work_start_hour+self.user.work_hours):
@@ -187,77 +226,152 @@ class UserModel(db.Model):
                 return False, "Activity not found"
 
             activity.start_time = start_time
-            activities = self.user.get_daily_activities(
-                self.week, self.week_day)
-            activities = list(
-                filter(lambda a: a.activity_id != activity.activity_id, activities))
-            activities.append(activity)
             try:
-                self._calculate_agenda_dictionary(activities)
+                self._calculate_agenda_dictionary(append=activity)
                 return True, "Ok"
             except InvalidAgendaError as e:
                 return False, e.message
 
-    def get_daily_agenda(self, week, week_day):
-        if(self.role != "maintainer"):
-            raise RoleError(
-                "The user is not a maintaner, therefore it does not have availabilities")
+    def get_daily_agenda(self, week, week_day, exclude=None):
+        """Returns a DailyAgenda for the user instance
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+            InvalidAgendaError: If the user does not have enough time to perform the maintenance activities
+
+        Args:
+                week (int): The nth week of the year
+                week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+                exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+        Returns:
+            DailyAgenda: The DailyAgenda for the user instance
+        """
         return self.DailyAgenda(
-            self, week, week_day)
+            self, week, week_day, exclude)
 
     def can_do_activity(self, activity_id, week_day, start_time):
         activity = MaintenanceActivityModel.find_by_id(activity_id)
         if not activity:
             return False, "Activity not found"
-        daily_agenda = self.DailyAgenda(self, activity.week, week_day)
+        daily_agenda = self.DailyAgenda(
+            self, activity.week, week_day, exclude=activity_id)
         return daily_agenda.is_activity_insertable(activity_id, start_time)
 
     class DailyPercentageAvailability:
-        def __init__(self, user, week, week_day):
+        """A class used to represent the daily percentage availability for a user with role 'maintainer'
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+
+        Returns:
+            DailyPercentageAvailability: An object with information about the user, the day associated with the 
+            DailyPercentageAvailability and a percentage that represents his availability for the whole day
+        """
+
+        def __init__(self, user, week, week_day, exclude=None):
+            """DailyPercentageAvailability constructor
+
+            Args:
+                user (UserModel): The user associated with the DailyPercentageAvailability
+                week (int): The nth week of the year
+                week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+                exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+            Raises:
+                RoleError: If the user's role is not 'maintainer'
+            """
             if(user.role != "maintainer"):
                 raise RoleError(
                     "The user is not a maintaner, therefore it does not have availabilities")
             self.user: UserModel = user
             self.week = week
             self.week_day = week_day
-            self.d = self._calculate_daily_percentage_availability()
+            self.exclude = exclude
+            self.percentage = self._calculate_daily_percentage_availability()
 
         def json(self):
-            return self.d
+            """Public representation for the DailyPercentageAvailability.
+
+            Returns:
+                (str): A string representing the percentage availability for an user in a whole day.
+            """
+            return self.percentage
 
         def _calculate_daily_percentage_availability(self):
+            """Private method used to calculate the user's percentage availability for a whole day
+
+            Returns:
+                (str): A string representing the percentage availability for an user in a whole day.
+            """
             activities = self.user.get_daily_activities(
-                self.week, self.week_day)
+                self.week, self.week_day, self.exclude)
             busy_minutes = MaintenanceActivityModel.get_total_estimated_time(
                 activities)
             busy_hours = busy_minutes / 60
             return f"{ round(100 - ( 100 * busy_hours/self.user.work_hours)) }%"
 
-    def get_daily_percentage_availability(self, week, week_day):
-        return self.DailyPercentageAvailability(self, week, week_day).json()
+    def get_daily_percentage_availability(self, week, week_day, exclude=None):
+        """Returns a DailyPercentageAvailability for the user instance
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+
+        Args:
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+            exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+        Returns:
+            DailyAgenda: The DailyPercentageAvailability for the user instance
+        """
+        return self.DailyPercentageAvailability(self, week, week_day, exclude)
 
     class WeeklyPercentageAvailability:
         _week_days = ["monday", "tuesday", "wednesday",
                       "thursday", "friday", "saturday", "sunday"]
 
-        def __init__(self, user, week):
+        def __init__(self, user, week, exclude=None):
+            """The WeeklyPercentageAvailability constructor
+
+            Args:
+                user (UserModel): The user associated with the WeeklyPercentageAvailability
+                week (int): The nth week of the year
+                exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+            Raises:
+                RoleError: If the user's role is not 'maintainer'
+            """
             if(user.role != "maintainer"):
                 raise RoleError(
                     "The user is not a maintaner, therefore it does not have availabilities")
             self.user: UserModel = user
             self.week = week
+            self.exclude = exclude
             self.d = self._calculate_weekly_percentage_availability_dictionary()
 
         def _calculate_weekly_percentage_availability_dictionary(self):
             d = {}
             for week_day in self._week_days:
                 d[week_day] = self.user.get_daily_percentage_availability(
-                    self.week, week_day)
+                    self.week, week_day, self.exclude).json()
             return d
 
         def json(self):
             return self.d
 
-    def get_weekly_percentage_availability(self, week):
+    def get_weekly_percentage_availability(self, week, exclude=None):
+        """Returns a WeeklyPercentageAvailability for the user instance
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+
+        Args:
+            week (int): The nth week of the year
+            exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+        Returns:
+            WeeklyPercentageAvailability: The WeeklyPercentageAvailability for the user instance
+        """
         return self.WeeklyPercentageAvailability(
-            self, week)
+            self, week, exclude)
