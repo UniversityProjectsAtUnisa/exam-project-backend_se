@@ -147,10 +147,33 @@ class MaintenanceActivityModel(db.Model):
 
     @classmethod
     def find_all_in_day(cls, week, week_day):
+        """Finds every Maintenance Activity for a given day
+
+        Args:
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+
+        Returns:
+            list of (MaintenanceActivityModel): List of found Maintenance Activities
+        """
         return cls.query.filter_by(week=week).filter_by(week_day=week_day).all()
 
     @classmethod
     def find_some_in_day(cls, week, week_day, current_page=1, page_size=10):
+        """Finds the selected page of Maintenance Activitis for a given day by means of given current_page and page_size.
+            Fails if current_page does not exist.
+
+        Args:
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+            current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
+            page_size (int, optional): The desired page size. Defaults to 10.
+
+        Returns:
+            ( list of (MaintenanceActivityModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated MaintenanceActivityModel instances; 
+            The second tuple element is the pagination metadata;
+        """
         rows = (cls.query
                 .filter_by(week=week)
                 .filter_by(week_day=week_day)
@@ -188,6 +211,22 @@ class MaintenanceActivityModel(db.Model):
 
     @classmethod
     def find_some_in_day_for_user(cls, username, week, week_day, current_page=1, page_size=10):
+        """Finds the selected page of Maintenance Activitis for a given day and a given user 
+            by means of given current_page and page_size.
+            Fails if current_page does not exist.
+
+        Args:
+            username (str): The username for the maintainer who has to perform those maintenance activities
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+            current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
+            page_size (int, optional): The desired page size. Defaults to 10.
+
+        Returns:
+            ( list of (MaintenanceActivityModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated MaintenanceActivityModel instances; 
+            The second tuple element is the pagination metadata;
+        """
         rows = (cls.query
                 .filter_by(maintainer_username=username)
                 .filter_by(week=week)
@@ -207,10 +246,31 @@ class MaintenanceActivityModel(db.Model):
 
     @classmethod
     def find_all_in_week(cls, week):
+        """Finds every Maintenance Activity for a given week
+
+        Args:
+            week (int): The nth week of the year
+
+        Returns:
+            list of (MaintenanceActivityModel): List of found Maintenance Activities
+        """
         return cls.query.filter_by(week=week).all()
 
     @classmethod
     def find_some_in_week(cls, week, current_page=1, page_size=10):
+        """Finds the selected page of Maintenance Activitis for a given week by means of given current_page and page_size.
+            Fails if current_page does not exist.
+
+        Args:
+            week (int): The nth week of the year
+            current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
+            page_size (int, optional): The desired page size. Defaults to 10.
+
+        Returns:
+            ( list of (MaintenanceActivityModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated MaintenanceActivityModel instances; 
+            The second tuple element is the pagination metadata;
+        """
         rows = (cls.query
                 .filter_by(week=week)
                 .offset(page_size*(current_page-1))
@@ -226,5 +286,13 @@ class MaintenanceActivityModel(db.Model):
 
     @classmethod
     def get_total_estimated_time(cls, activities):
+        """Calculates the sum of activities' estimated time given a list of activities
+
+        Args:
+            activities (list of (MaintenanceActivityModel)): The list of Maintenance Activities
+
+        Returns:
+            int: The total estimated time in minutes
+        """
         return reduce(lambda acc,
                       activity: acc + activity.estimated_time, activities, 0)

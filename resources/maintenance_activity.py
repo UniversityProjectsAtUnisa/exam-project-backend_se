@@ -6,7 +6,7 @@ from jwt_utils import role_required
 
 
 class MaintenanceActivity(Resource):
-    """User API for get (single), put and delete operations."""
+    """MaintenanceActivity API for get (single), put and delete operations."""
     _activity_parser = reqparse.RequestParser()
     _activity_parser.add_argument("workspace_notes",
                                   type=str,
@@ -150,7 +150,7 @@ class MaintenanceActivityCreate(Resource):
     _activity_parser.add_argument("estimated_time",
                                   type=int,
                                   required=True,
-                                  help="Estimated Time should be the expected duration of the activty, in minutes"
+                                  help="estimated_time should be the expected duration of the activity, in minutes"
                                   )
     _activity_parser.add_argument("interruptible",
                                   type=bool,
@@ -178,6 +178,17 @@ class MaintenanceActivityCreate(Resource):
     def post(cls):
         """Creates one activity in the database.
 
+        Args:
+            activity_type (str): Body argument indicating the activity type
+            site (str): Body argument indicating the factory location
+            typology (str): Body argument indicating the context of the activity
+            description (str): Body argument indicating the description of the activity
+            estimated_time (int): Body argument indicating the expected duration of the activity, in minutes
+            interruptible (bool): Body argument indicating if the activity should be interruptible
+            materials (str, optional): Optional body argument indicating the list of materials needed for the activity
+            week (int): Body argument indicating the nth week of the year during which the activity has to be performed
+            workspace_notes (str, optional): Optional body argument indicating a short description of the workspace
+
         Returns:
             dict of (str, any): Jsonified activity or error message.
         """
@@ -193,6 +204,7 @@ class MaintenanceActivityCreate(Resource):
 
 
 class MaintenanceActivityAssign(Resource):
+    """MaintenanceActivity API for activity assignment"""
     _activity_parser = reqparse.RequestParser()
     _activity_parser.add_argument("maintainer_username",
                                   type=str,
@@ -213,6 +225,18 @@ class MaintenanceActivityAssign(Resource):
     @classmethod
     @role_required("planner")
     def put(cls, id):
+        """Assigns a MaintenanceActivity to an user with role 'maintainer'.
+        Fails if the maintainer role is not 'maintainer'.
+
+        Args:
+            id (int): The identifier of the maintenance activity to be assigned.
+            maintainer_username (str): Body param indicating the maintainer's username
+            week_day (str): Body param indicating the day of the week (i.e.: monday, tuesday, ...)
+            start_time (int): Body param indicating the hour that the activity has to be scheduled to
+
+        Returns:
+            dict of (str, str): Jsonified success or error message.
+        """
         data = cls._activity_parser.parse_args()
 
         try:

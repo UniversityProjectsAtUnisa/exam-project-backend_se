@@ -123,10 +123,26 @@ class UserModel(db.Model):
 
     @classmethod
     def find_all_maintainers(cls):
+        """Finds every user with role 'maintainer' in the database
+
+        Returns:
+            list of (UserModel): List of found users
+        """
         return cls.query.filter_by(role="maintainer").all()
 
     @classmethod
     def find_some_maintainers(cls, current_page=1, page_size=10):
+        """Finds the selected page of users  with role 'maintainer' by means of given current_page and page_size.
+            Fails if current_page does not exist.
+
+        Args:
+            current_page (int, optional): The desired page number, starting from 1. Defaults to 1.
+            page_size (int, optional): The desired page size. Defaults to 10.
+
+        Returns:
+            ( list of (UserModel), dict of (str, int) ): 
+            The first tuple element is a list of paginated UserModel instances; The second tuple element is the pagination metadata;
+        """
         rows = cls.query.filter_by(role="maintainer").offset(
             page_size*(current_page-1)).limit(page_size).all()
 
@@ -137,6 +153,19 @@ class UserModel(db.Model):
         return rows, meta
 
     def get_daily_activities(self, week, week_day, exclude=None):
+        """Finds every activity for a user with role 'maintainer' in a given day.
+
+        Args:
+            week (int): The nth week of the year
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+            exclude (int, optional): a valid identifier for an activity that has to be assigned
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+
+        Returns:
+            list of (MaintenanceActivityModel): List of found Maintenance Activities
+        """
         if(self.role != "maintainer"):
             raise RoleError(
                 "The user is not a maintaner, therefore it does not have availabilities")
@@ -178,6 +207,11 @@ class UserModel(db.Model):
             self.agenda = self._calculate_agenda_dictionary()
 
         def json(self):
+            """Public representation for the DailyAgenda.
+
+            Returns:
+                dict of (str, int): The dictionary representation of the agenda.
+            """
             return self.agenda
 
         def _calculate_agenda_dictionary(self, append=None):
@@ -219,6 +253,16 @@ class UserModel(db.Model):
             return d
 
         def is_activity_insertable(self, activity_id, start_time):
+            """Checks if a new activity can be inserted in the user's schedule given his time left in the DailyAgenda
+
+            Args:
+                activity_id (int): The id for the new activity that has to be inserted
+                start_time (int): The hour that the activity has to be scheduled to
+
+            Returns:
+                (bool, str): A tuple that contains a boolean that tells if the answer is insertable, and a string
+                that tells a message about the obtained response 
+            """
             if start_time < self.user.work_start_hour or start_time > self.user.work_start_hour + self.user.work_hours:
                 return False, "Invalid start_time"
             activity = MaintenanceActivityModel.find_by_id(activity_id)
@@ -251,6 +295,21 @@ class UserModel(db.Model):
             self, week, week_day, exclude)
 
     def can_do_activity(self, activity_id, week_day, start_time):
+        """Checks if a new activity can be inserted in the user's schedule given his time left in his DailyAgenda
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+            InvalidAgendaError: If the user does not have enough time to perform the maintenance activities
+
+        Args:
+            activity_id (int): The id for the new activity that has to be inserted
+            start_time (int): The hour that the activity has to be scheduled to
+            week_day (str): The day of the week (i.e.: monday, tuesday, ...)
+
+        Returns:
+            (bool, str): A tuple that contains a boolean that tells if the answer is insertable, and a string
+            that tells a message about the obtained response 
+        """
         activity = MaintenanceActivityModel.find_by_id(activity_id)
         if not activity:
             return False, "Activity not found"
@@ -328,6 +387,15 @@ class UserModel(db.Model):
         return self.DailyPercentageAvailability(self, week, week_day, exclude)
 
     class WeeklyPercentageAvailability:
+        """A class used to represent the weekly percentage availability for a user with role 'maintainer'
+
+        Raises:
+            RoleError: If the user's role is not 'maintainer'
+
+        Returns:
+            WeeklyPercentageAvailability: An object with information about the user, the week associated with the 
+            WeeklyPercentageAvailability and a dictionary with his percentage availabilities classified by day of the week
+        """
         _week_days = ["monday", "tuesday", "wednesday",
                       "thursday", "friday", "saturday", "sunday"]
 
@@ -351,6 +419,11 @@ class UserModel(db.Model):
             self.d = self._calculate_weekly_percentage_availability_dictionary()
 
         def _calculate_weekly_percentage_availability_dictionary(self):
+            """Private method used to calculate the dictionary of user's weekly availabilities
+
+            Returns:
+                dict of (str, str): The dictionary with the day of the week as key and the percentage left free for the user in that day
+            """
             d = {}
             for week_day in self._week_days:
                 d[week_day] = self.user.get_daily_percentage_availability(
@@ -358,6 +431,11 @@ class UserModel(db.Model):
             return d
 
         def json(self):
+            """Public representation for the WeeklyPercentageAvailability.
+
+            Returns:
+                dict of (str, str): The dictionary representation of the WeeklyPercentageAvailability.
+            """
             return self.d
 
     def get_weekly_percentage_availability(self, week, exclude=None):
