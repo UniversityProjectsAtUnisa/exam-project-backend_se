@@ -1,4 +1,6 @@
 import pytest
+import math
+import copy
 
 
 @pytest.fixture
@@ -6,21 +8,20 @@ def activity_seeds():
     """Gets the list of activities that will be used to prepopulate the database before each test
 
     Returns:
-        list of (dict of (str, str)): list of activities
+        list of (dict of (str, any)): list of activities
     """
     return [
         {'activity_id': '101', 'activity_type': 'planned', 'site': 'management',
             'typology': 'electrical', 'description': 'Planned electrical Maintenance Activity', 'estimated_time': '30',
-            'interruptible': 'yes', 'materials': 'drill', 'week': '1', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+            'interruptible': True, 'materials': 'drill', 'week': '1', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
         {'activity_id': '102', 'activity_type': 'unplanned', 'site': 'management',
             'typology': 'electrical', 'description': 'Unplanned electrical Maintenance Activity', 'estimated_time': '45',
-            'interruptible': 'no', 'materials': 'drill', 'week': '2', 'workspace_notes': 'Site: Management; Typology: Electrical'},
+            'interruptible': False, 'materials': 'drill', 'week': '2', 'workspace_notes': 'Site: Management; Typology: Electrical'},
 
         {'activity_id': '103', 'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '3', 'workspace_notes': 'Site: Management; Typology: Electrical'},
-
+            'interruptible': True, 'materials': 'spikes', 'week': '3', 'workspace_notes': 'Site: Management; Typology: Electrical'},
     ]
 
 
@@ -29,11 +30,11 @@ def unexisting_activity():
     """Gets an activity that is not included in activity_seeds
 
     Returns:
-        dict of (str, str): the unexisting activity
+        dict of (str, any): the unexisting activity
     """
     return {'activity_id': '500', 'activity_type': 'planned', 'site': 'management',
             'typology': 'electronical', 'description': 'Planned electronical Maintenance Activity', 'estimated_time': '120',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'}
+            'interruptible': True, 'materials': 'spikes', 'week': '30', 'workspace_notes': 'Site: Management; Typology: Electronical'}
 
 
 @pytest.fixture
@@ -41,11 +42,11 @@ def unexisting_activity_without_id():
     """Gets an activity that is not included in activity_seeds and does not have an activity_id
 
     Returns:
-        dict of (str, str): the unexisting activity without id
+        dict of (str, any): the unexisting activity without id
     """
     return {'activity_type': 'extra', 'site': 'management',
             'typology': 'electrical', 'description': 'Extra electrical Maintenance Activity', 'estimated_time': '60',
-            'interruptible': 'yes', 'materials': 'spikes', 'week': '20',
+            'interruptible': True, 'materials': 'spikes', 'week': '20',
             'workspace_notes': 'Site: Management; Typology: Electrical'}
 
 
@@ -93,6 +94,7 @@ def planner_seed():
 def setup(app, activity_seeds, planner_seed):
     """Before each test it drops every table and recreates them. 
     Then it creates an activity for every dictionary present in activity_seeds
+    It also creates a planner that will be used to perform the requests
 
     Returns:
         boolean: the return status
@@ -164,7 +166,6 @@ def test_get_activities_success(planner_client, activity_seeds):
     assert res.get_json()['meta']['current_page'] == test_current_page
     assert res.get_json()['meta']['page_size'] == test_page_size
 
-    import math
     expected_page_count = math.ceil(len(activity_seeds) / test_page_size)
     assert res.get_json()['meta']['page_count'] == expected_page_count
 
@@ -180,7 +181,6 @@ def test_get_activities_in_week_success(planner_client, activity_seeds):
 def test_get_activities_page_not_found(planner_client, activity_seeds):
     """ Test for a non-existing page """
     test_page_size = 5
-    import math
     test_page_count = math.ceil(len(activity_seeds) / test_page_size)
     test_current_page = test_page_count + 1
     res = planner_client.get(
@@ -204,7 +204,6 @@ def test_post_activity_success(planner_client, unexisting_activity_without_id):
 
 def test_post_activity_missing_required_argument(planner_client, unexisting_activity_without_id, post_required_arguments):
     """ Test for creating a new activity without a required argument """
-    import copy
     for arg in post_required_arguments:
         test_activity = copy.deepcopy(unexisting_activity_without_id)
         del test_activity[arg]
@@ -218,7 +217,6 @@ def test_post_activity_missing_required_argument(planner_client, unexisting_acti
 
 def test_post_activity_missing_optional_argument(planner_client, unexisting_activity_without_id, post_optional_arguments):
     """ Test for creating a new activity without an optional argument """
-    import copy
     for arg in post_optional_arguments:
         test_activity = copy.deepcopy(unexisting_activity_without_id)
         del test_activity[arg]
