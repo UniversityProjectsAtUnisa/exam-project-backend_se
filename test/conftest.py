@@ -5,14 +5,12 @@ import pytest
 
 @pytest.fixture
 def app():
-    """Creates the app and liks the db
+    """Creates the app
 
     Returns:
         Flask: The Flask app
     """
     _app = create_app('config.TestConfig')
-    from db import db
-    db.init_app(_app)
     return _app
 
 
