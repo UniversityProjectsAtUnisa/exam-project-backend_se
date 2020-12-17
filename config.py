@@ -37,7 +37,7 @@ class Config:
     # secret key to check jwt validity
     JWT_SECRET_KEY = JWT_SECRET_KEY
     # token expire time in seconds
-    JWT_TOKEN_EXPIRES = JWT_TOKEN_EXPIRES
+    JWT_ACCESS_TOKEN_EXPIRES = JWT_TOKEN_EXPIRES
 
     # Enable testing mode. Exceptions are propagated rather than handled by the the app’s error handlers.
     TESTING = TESTING
