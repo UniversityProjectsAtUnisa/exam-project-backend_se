@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def user_seeds():
-    """Gets the list of users that will be used to prepopulate the database before each test
+    """Gets the list of users for every possible role
 
     Returns:
         list of (dict of (str, str)): list of users
@@ -69,7 +69,7 @@ def admin_client(client, admin_user):
 
 
 def test_login_success(client, user_seeds):
-    """ Test for login with correct credentials """
+    """ Tests a successful login """
     test_user = user_seeds[0]
     res = client.post(
         "/login", data=test_user)
@@ -78,7 +78,7 @@ def test_login_success(client, user_seeds):
 
 
 def test_login_user_not_found(client, unexisting_user):
-    """ Test for login with unexisting credentials """
+    """ Tests a failed login by using an unexisting username"""
     test_user = unexisting_user
     res = client.post(
         "/login", data=test_user)
@@ -87,7 +87,7 @@ def test_login_user_not_found(client, unexisting_user):
 
 
 def test_login_wrong_password(client, user_seeds):
-    """ Test for login with wrong password """
+    """ Tests a failed login by using an incorrect password """
     test_user = user_seeds[0]
     test_user["password"] = "wrongpassword"
     res = client.post(
@@ -98,29 +98,31 @@ def test_login_wrong_password(client, user_seeds):
 
 
 def test_logout_success(admin_client):
-    """ Test for successful logout """
+    """ Tests a successful logout """
     res = admin_client.post("/logout")
     assert res.status_code == 200
     assert "message" in res.get_json()
 
 
 def test_logout_missing_authorization(client):
-    """ Test for logout without passing the authorization token"""
+    """ Tests a failed logout by not using an access token """
     res = client.post("/logout")
     assert res.status_code == 401
     assert "message" in res.get_json()
 
 
 def test_logout_already_logged_out(admin_client):
-    """ Test for logout on a client which has already been logged out """
+    """ Test a failed logout by using an access token that has already been dismissed """
+    # Correctly logs out
     admin_client.post("/logout")
+    # Fails to logout
     res = admin_client.post("/logout")
     assert res.status_code == 401
     assert "message" in res.get_json()
 
 
 def test_change_password_success(admin_client, admin_user):
-    """ Test for successfully changing user password """
+    """ Tests a successful password change """
     logged_user = admin_user
     data = {
         "old_password": logged_user["password"], "new_password": "new_password"}
@@ -130,7 +132,7 @@ def test_change_password_success(admin_client, admin_user):
 
 
 def test_change_password_missing_authorization(client, admin_user):
-    """ Test for changing user password without passing the authorization token """
+    """ Tests a failed password change by not using an access token """
     logged_user = admin_user
     data = {
         "old_password": logged_user["password"], "new_password": "new_password"}
@@ -140,7 +142,7 @@ def test_change_password_missing_authorization(client, admin_user):
 
 
 def test_change_password_wrong_password(client):
-    """ Test for changing user password using the wrong old password for the current logged in user """
+    """ Tests a failed password change by using the wrong old password """
     data = {
         "old_password": "wrong_password", "new_password": "new_password"}
     res = client.post("/change_password", data=data)

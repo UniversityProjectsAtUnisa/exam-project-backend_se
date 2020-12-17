@@ -5,7 +5,7 @@ import copy
 
 @pytest.fixture
 def activity_seeds():
-    """Gets the list of activities that will be used to prepopulate the database before each test
+    """Gets a list of activities with presets activity_id
 
     Returns:
         list of (dict of (str, any)): list of activities
@@ -69,7 +69,7 @@ def post_required_arguments():
 
 @pytest.fixture
 def post_optional_arguments():
-    """List of optional body params in order taken by a post request
+    """List of optional body params in order to perform a post request
 
     Returns:
         list of (str): The list of arguments
@@ -82,10 +82,10 @@ def post_optional_arguments():
 
 @pytest.fixture
 def planner_seed():
-    """Gets the mock planner user that will be used to prepopulate the database before each test
+    """Gets an user with role 'planner'
 
     Returns:
-        (dict of (str, str):  mock planner user
+        (dict of (str, str):  the planner user
     """
     return {'username': 'planner', 'password': 'password', 'role': 'planner'}
 
@@ -135,17 +135,17 @@ def test_unexisting_activity(activity_seeds, unexisting_activity):
 
 
 def test_get_activity_success(planner_client, activity_seeds):
-    """ Test for searching an existing activity by his id """
+    """ Tests a successful retrival of a single activity """
     test_activity: dict = activity_seeds[0]
     res = planner_client.get(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 200
     activity_json = res.get_json()
     for k in test_activity.keys():
-        assert str(activity_json[k]) == test_activity[k]
+        assert str(activity_json[k]) == str(test_activity[k])
 
 
 def test_get_activity_not_found(planner_client, unexisting_activity):
-    """ Test for searching a non-existing activity """
+    """ Tests a failed retrival of a single activity using an activity_id for an activity that does not exist """
     test_activity = unexisting_activity
     res = planner_client.get(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404
@@ -153,7 +153,7 @@ def test_get_activity_not_found(planner_client, unexisting_activity):
 
 
 def test_get_activities_success(planner_client, activity_seeds):
-    """ Test for getting correctly the first page of activities """
+    """ Tests a successful retrival of a page of activities """
     test_current_page = 1
     test_page_size = len(activity_seeds) - 1
 
@@ -171,6 +171,7 @@ def test_get_activities_success(planner_client, activity_seeds):
 
 
 def test_get_activities_in_week_success(planner_client, activity_seeds):
+    """ Tests a successful retrival of a page of activities filtered by week """
     test_activity = activity_seeds[0]
     res = planner_client.get(f"/activities?week={test_activity['week']}")
     assert res.status_code == 200
@@ -179,7 +180,7 @@ def test_get_activities_in_week_success(planner_client, activity_seeds):
 
 
 def test_get_activities_page_not_found(planner_client, activity_seeds):
-    """ Test for a non-existing page """
+    """ Tests a failed retrival of a page of activities using a non-existing current_page """
     test_page_size = 5
     test_page_count = math.ceil(len(activity_seeds) / test_page_size)
     test_current_page = test_page_count + 1
@@ -191,19 +192,19 @@ def test_get_activities_page_not_found(planner_client, activity_seeds):
 
 
 def test_post_activity_success(planner_client, unexisting_activity_without_id):
-    """ Test for creating a new activity """
+    """ Tests a successful creation of an activity """
     test_activity = unexisting_activity_without_id
     res = planner_client.post('/activity', data=test_activity)
 
     assert res.status_code == 201
     activity_json = res.get_json()
     for k in test_activity.keys():
-        assert test_activity[k] == str(
+        assert str(test_activity[k]) == str(
             activity_json[k]), f"'{k}' for the created activity does not match the one sent to the post request, {test_activity[k]} != {activity_json[k]}"
 
 
 def test_post_activity_missing_required_argument(planner_client, unexisting_activity_without_id, post_required_arguments):
-    """ Test for creating a new activity without a required argument """
+    """ Tests a failed creation of an activity by not passing some required argument """
     for arg in post_required_arguments:
         test_activity = copy.deepcopy(unexisting_activity_without_id)
         del test_activity[arg]
@@ -215,8 +216,8 @@ def test_post_activity_missing_required_argument(planner_client, unexisting_acti
         ), f"The error message does not mention that the required parameter '{arg}' is missing"
 
 
-def test_post_activity_missing_optional_argument(planner_client, unexisting_activity_without_id, post_optional_arguments):
-    """ Test for creating a new activity without an optional argument """
+def test_post_activity_missing_optional_argument_success(planner_client, unexisting_activity_without_id, post_optional_arguments):
+    """ Tests a successful creation of an activity without passing optional parameters """
     for arg in post_optional_arguments:
         test_activity = copy.deepcopy(unexisting_activity_without_id)
         del test_activity[arg]
@@ -224,12 +225,12 @@ def test_post_activity_missing_optional_argument(planner_client, unexisting_acti
         assert res.status_code == 201, f"Status code is not 201 when omitting optional parameter '{arg}'"
         activity_json = res.get_json()
         for k in test_activity.keys():
-            assert test_activity[k] == str(
+            assert str(test_activity[k]) == str(
                 activity_json[k]), f"'{k}' for the created activity does not match the one sent to the post request when omitting the optional parameter , {test_activity[k]} != {activity_json[k]}"
 
 
-def test_put_activity_id_success(planner_client, unexisting_activity, activity_seeds):
-    """ Test for modifying an activity's workspace notes """
+def test_put_activity_success(planner_client, unexisting_activity, activity_seeds):
+    """ Tests a successful edit of an activity's workspace notes """
     test_activity = {'workspace_notes': unexisting_activity['workspace_notes']}
     test_old_activity = activity_seeds[0]
 
@@ -240,8 +241,17 @@ def test_put_activity_id_success(planner_client, unexisting_activity, activity_s
         'workspace_notes'] == test_activity['workspace_notes']
 
 
+def test_put_activity_not_found(planner_client, unexisting_activity):
+    """ Tests a failed edit of an activity by using an activity_id for an activity that does not exist """
+    test_activity = unexisting_activity
+
+    res = planner_client.put(f"/activity/{test_activity['activity_id']}")
+    assert res.status_code == 404
+    assert 'message' in res.get_json().keys()
+
+
 def test_delete_activity_success(planner_client, activity_seeds):
-    """ Test for deleting an existing activity """
+    """ Tests a succesful deletion of an activity """
     test_activity = activity_seeds[0]
     res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 200
@@ -249,7 +259,7 @@ def test_delete_activity_success(planner_client, activity_seeds):
 
 
 def test_delete_activity_not_found(planner_client, unexisting_activity):
-    """ Test for deleting a non-existing activity """
+    """ Tests a failed deletion of an activity using an activity_id for an activity that does not exist """
     test_activity = unexisting_activity
     res = planner_client.delete(f"/activity/{test_activity['activity_id']}")
     assert res.status_code == 404

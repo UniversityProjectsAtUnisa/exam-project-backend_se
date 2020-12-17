@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture
 def user_seeds():
-    """Gets the list of users that will be used to prepopulate the database before each test
+    """Gets a list of two users for every possible role 
 
     Returns:
         list of (dict of (str, str)): list of users
@@ -79,7 +79,7 @@ def test_unexisting_user_not_in_user_seeds(user_seeds, unexisting_user):
 
 
 def test_get_user_success(admin_client, user_seeds):
-    """ Test for searching an existing user by his username """
+    """ Tests a succesful retrival of a single user """
     test_user = user_seeds[0]
     res = admin_client.get(f"/user/{test_user['username']}")
     assert res.status_code == 200
@@ -89,7 +89,7 @@ def test_get_user_success(admin_client, user_seeds):
 
 
 def test_get_user_not_found(admin_client, unexisting_user):
-    """ Test for searching a non-existing user """
+    """ Tests a failed retrival of a single user by using an username for an user that does not exist """
     test_user = unexisting_user
     res = admin_client.get(f"/user/{test_user['username']}")
     assert res.status_code == 404
@@ -97,7 +97,7 @@ def test_get_user_not_found(admin_client, unexisting_user):
 
 
 def test_get_users_success(admin_client, user_seeds):
-    """ Test for getting correctly the first page of users """
+    """ Tests a succesful retrival of a page of users """
     test_current_page = 1
     test_page_size = len(user_seeds) - 1
 
@@ -116,7 +116,7 @@ def test_get_users_success(admin_client, user_seeds):
 
 
 def test_get_users_page_not_found(admin_client, user_seeds):
-    """ Test for a non-existing page """
+    """ Tests a failed retrival of a page of users using a non-existing current_page """
     test_page_size = 5
     import math
     test_page_count = math.ceil(len(user_seeds) / test_page_size)
@@ -129,7 +129,7 @@ def test_get_users_page_not_found(admin_client, user_seeds):
 
 
 def test_post_user_success(admin_client, unexisting_user):
-    """ Test for creating a new user with a non-existing username """
+    """ Tests a succesful creation of an user """
     test_user = unexisting_user
     res = admin_client.post('/user', data=test_user)
 
@@ -140,7 +140,7 @@ def test_post_user_success(admin_client, unexisting_user):
 
 
 def test_post_user_already_exists(admin_client, user_seeds):
-    """ Test for creating a new user with an existing username """
+    """ Tests a failed creation of an user using an username for an user that already exists """
     test_user = user_seeds[0]
     res = admin_client.post('/user', data=test_user)
 
@@ -149,7 +149,7 @@ def test_post_user_already_exists(admin_client, user_seeds):
 
 
 def test_post_user_missing_username(admin_client):
-    """ Test for creating a new user without username """
+    """ Tests a failed creation of an user by omitting the username """
     test_user_without_username = {'password': 'password', 'role': 'admin'}
     res = admin_client.post('/user', data=test_user_without_username)
     assert res.status_code == 400
@@ -158,7 +158,7 @@ def test_post_user_missing_username(admin_client):
 
 
 def test_post_user_missing_password(admin_client):
-    """ Test for creating a new user without password """
+    """ Tests a failed creation of an user by omitting the password """
     test_user_without_password = {'username': 'username', 'role': 'admin'}
     res = admin_client.post('/user', data=test_user_without_password)
     assert res.status_code == 400
@@ -167,7 +167,7 @@ def test_post_user_missing_password(admin_client):
 
 
 def test_post_user_missing_role(admin_client):
-    """ Test for creating a new user without role """
+    """ Tests a failed creation of an user by omitting the role """
     test_user_without_role = {'username': 'username', 'password': 'password'}
     res = admin_client.post('/user', data=test_user_without_role)
     assert res.status_code == 400
@@ -176,7 +176,7 @@ def test_post_user_missing_role(admin_client):
 
 
 def test_put_user_success(admin_client, unexisting_user, user_seeds):
-    """ Test for modifying an user's username and role """
+    """ Tests a successful edit of an user  """
     test_user = unexisting_user
     test_user.pop('password')
     test_old_user = user_seeds[0]
@@ -190,7 +190,7 @@ def test_put_user_success(admin_client, unexisting_user, user_seeds):
 
 
 def test_put_user_username_success(admin_client, unexisting_user, user_seeds):
-    """ Test for modifying an user's username """
+    """ Tests a succesful edit of an user by only editing his username """
     test_user = {'username': unexisting_user['username']}
     test_old_user = user_seeds[0]
 
@@ -203,7 +203,7 @@ def test_put_user_username_success(admin_client, unexisting_user, user_seeds):
 
 
 def test_put_user_role_success(admin_client, unexisting_user, user_seeds):
-    """ Test for modifying an user's role """
+    """ Tests a succesful edit of an user by only editing his role """
     test_user = {'role': unexisting_user['role']}
     test_old_user = user_seeds[0]
 
@@ -216,7 +216,7 @@ def test_put_user_role_success(admin_client, unexisting_user, user_seeds):
 
 
 def test_put_user_not_found(admin_client, unexisting_user):
-    """ Test for modifying a non-existing user """
+    """ Tests a failed edit of an user by using and username for an user that does not exist """
     test_user = unexisting_user
     res = admin_client.put(f"/user/{test_user['username']}", data={})
     assert res.status_code == 404
@@ -224,7 +224,7 @@ def test_put_user_not_found(admin_client, unexisting_user):
 
 
 def test_put_user_new_username_already_existing(admin_client, user_seeds):
-    """ Test for modifying an user with another username which is already used """
+    """ Tests a failed edit of an user by using a new username for an user that already exists """
     test_user = user_seeds[0]
     user_with_username_already_existing = user_seeds[1]
     res = admin_client.put(
@@ -234,7 +234,7 @@ def test_put_user_new_username_already_existing(admin_client, user_seeds):
 
 
 def test_delete_user_success(admin_client, user_seeds):
-    """ Test for deleting an existing user """
+    """ Tests a successful deletion of an user """
     test_user = user_seeds[0]
     res = admin_client.delete(f"/user/{test_user['username']}")
     assert res.status_code == 200
@@ -242,7 +242,7 @@ def test_delete_user_success(admin_client, user_seeds):
 
 
 def test_delete_user_not_found(admin_client, unexisting_user):
-    """ Test for deleting a non-existing user """
+    """ Tests a failed deletion of an user by using an username for an user that does not exist """
     test_user = unexisting_user
     res = admin_client.delete(f"/user/{test_user['username']}")
     assert res.status_code == 404
