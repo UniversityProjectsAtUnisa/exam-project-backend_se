@@ -2,5 +2,6 @@ Flask
 Flask-RESTful
 Flask-JWT-Extended
 Flask-SQLAlchemy
+Flask-Seeder
 python-dotenv
 psycopg2
