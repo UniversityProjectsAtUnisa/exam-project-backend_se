@@ -209,7 +209,7 @@ class UserLogin(Resource):
             return {"message": "User not found"}, 404
 
         if not check_password_hash(user.password, data["password"]):
-            return {"message": "Incorrect password"}, 401  # Not authorized
+            return {"message": "Incorrect password"}, 400
 
         access_token = create_access_token(
             identity=user.username, user_claims=user.json())

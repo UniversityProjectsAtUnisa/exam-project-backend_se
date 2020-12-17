@@ -54,7 +54,6 @@ def admin_user(user_seeds):
     return next(user for user in user_seeds if user["role"] == "admin")
 
 
-
 @pytest.fixture
 def admin_client(client, admin_user):
     """ Creates a test client with preset admin authorization headers taken from the login endpoint
@@ -93,8 +92,9 @@ def test_login_wrong_password(client, user_seeds):
     test_user["password"] = "wrongpassword"
     res = client.post(
         "/login", data=test_user)
-    assert res.status_code == 401
+    assert res.status_code == 400
     assert "message" in res.get_json()
+    assert res.get_json()["message"] == "Incorrect password"
 
 
 def test_logout_success(admin_client):
