@@ -57,8 +57,8 @@ class UserSeeder(Seeder):
             }
         )
 
-        # Creates 150 maintenance activities
-        for activity in faker.create(150):
+        # Creates 8 maintenance activities
+        for activity in faker.create(8):
             print("Adding activity ", activity.json())
             self.db.session.add(activity)
 
